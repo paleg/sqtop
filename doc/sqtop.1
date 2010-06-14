@@ -1,0 +1,120 @@
+.\" Copyright (c) 2010 Marco Steinbach
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" The following requests are required for all man pages.
+.Dd May 18, 2010
+.\" .Os [OPERATING_SYSTEM] [version/release]
+.Dt SQTOP 1
+.Sh NAME
+.Nm sqtop
+.Nd display active client connections for Squid
+.Sh SYNOPSIS
+.Nm sqtop
+.Op Ar options
+.Sh DESCRIPTION
+.Nm sqtop
+displays information about currently active client connections for a Squid proxy
+in a convenient way.
+.Pp
+Without options,
+.Nm sqtop
+tries to connect to a Squid proxy on 127.0.0.1 using port 3128. 
+.Sh OPTIONS
+.Bl -tag -width indent
+.It Fl -host Ar host ( Fl h Ar host )
+Squid proxy host. Defaults to 127.0.0.1.
+.It Fl -port Ar port ( Fl p Ar port )
+Squid proxy port. Defaults to 3128.
+.It Fl -pass Ar password ( Fl P Ar password )
+Squid proxy cachemgr_passwd.
+.It Fl -hosts Ar hostlist ( Fl H Ar hostlist )
+Comma-separated list of client IP addresses (CIDR notation is supported) to query the
+Squid proxy for. Hostnames are silently ignored.
+.It Fl -users Ar userlist ( Fl u Ar userlist )
+Comma-separated list of Squid usernames to list active connections for.
+.It Fl -brief ( Fl b )
+Display brief per-connection information (without urls).
+.It Fl -detail ( Fl d )
+Display detailed information about each url in connection (size, username, average speed).
+.It Fl -full ( Fl f )
+Display full details about each url in connection (size, username, average speed, delay pool, elapsed time).
+.It Fl -zero ( Fl z )
+Display zero values instead of silently omitting them.
+.It Fl -once ( Fl o )
+Disable UI mode, just print statistics once into stdout.
+.It Fl -refreshinterval Ar seconds ( Fl r Ar seconds )
+Set refresh interval between quering statistics from squid.
+.It Fl -nocompactsameurls ( Fl c )
+Show same urls in single connection.
+.It Fl -help
+Display a brief help text.
+
+.Sh User Interface (UI)
+
+When running in UI mode (without \fB--once\fP option), sqtop uses the whole screen to display active squid connections. At the top of the display it shows information about currently connected squid server and sqtop version. It also shows here any error occurs in runtime.
+
+At the bottom of the display, various totals are shown, including current/average speed, total number of ip connected and total number of connections.
+
+Any option given in command line can be changed from UI with hotkeys (with the same char as short option). List of hotkeys with current values can be shown by pressing ? in UI. In addition to options given in command line it recognizes following hotkeys:
+
+\fB/\fP search for substring in IPs, usernames or urls.
+
+\fBSPACE\fP stop statistics refreshing.
+
+\fBUP/DOWN/PAGEUP/PAGEDOWN/HOME/END\fP scroll display.
+
+\fBENTER\fP toggle showing/hiding: urls (for connections), full details (for urls).
+
+\fB?\fP show help.
+
+\fBC\fP compact long urls to fit one line.
+
+\fBs\fP change speed showing mode (\fBboth current and average\fP -> current only -> average only).
+
+\fBo\fP connections sort order (by \fBsize\fP -> current speed -> average speed -> max time).
+
+\fBq\fP quit.
+
+
+.El
+.Sh EXAMPLES
+.Pp
+List all currently active connections in UI mode from 192.168.2.0/24 and 172.18.118.10 to a Squid proxy running at
+mysquid.example.com, port 8080 using ZePasswd as cachemgr_passwd:
+.Dl $ sqtop -h mysquid.example.com -port 8080 -p ZePasswd -H 192.168.2.0/24,172.18.118.10
+.Sh SEE ALSO
+The Squid homepage at:
+.Pa http://www.squid-cache.org .
+.Pp
+The
+.Nm sqtop
+homepage at:
+.Pa http://www.dp.uz.gov.ua/o.palij/sqtop/ .
+.Sh AUTHOR
+.Nm sqtop
+was written by
+.An Oleg Palij <o.palij@gmail.com> .
+.Pp
+This man page was written by
+.An Marco Steinbach <coco@executive-computing.de> .
