@@ -38,7 +38,7 @@ static struct option longopts[] = {
    { "once",               no_argument,         NULL,    'o' },
    { "refreshinterval",    required_argument,   NULL,    'r' },
 #endif
-   { "compactsameurls",    no_argument,         NULL,    'c' },
+   { "nocompactsameurls",    no_argument,         NULL,    'c' },
    { NULL,                 0,                   NULL,     0 }
 };
 
@@ -47,7 +47,7 @@ void usage(char **argv) {
    cout << "version " << VERSION << " " << copyright << "(" << contacts << ")" << endl;
    cout << endl;
    cout << "Usage:";
-   cout << "\n" << argv[0] << " [--host host] [--port port] [--pass password] [--hosts host1,host...] [--users user1,user2] [--brief] [--full] [--zero] [--detail] [--compactsameurls] [--once] [--help]";
+   cout << "\n" << argv[0] << " [--host host] [--port port] [--pass password] [--hosts host1,host...] [--users user1,user2] [--brief] [--full] [--zero] [--detail] [--nocompactsameurls] [--once] [--help]";
    cout << "\n\t--host   (-h) host           - " << host_help << ". Default - '127.0.0.1';";
    cout << "\n\t--port   (-p) port           - " << port_help << ". Default - '3128';";
    cout << "\n\t--pass   (-P) password       - " << passwd_help << ";";
@@ -58,7 +58,7 @@ void usage(char **argv) {
    cout << "\n\t--full   (-f)                - " << full_help << ";";
    cout << "\n\t--zero   (-z)                - " << zero_help << ";";
 #ifdef ENABLE_UI
-   cout << "\n\t--once   (-o)                - disable UI mode, just print statistics once into stdout;";
+   cout << "\n\t--once   (-o)                - disable interactive mode, just print statistics once to stdout;";
    cout << "\n\t--refreshinterval (-r) sec   - " << refresh_interval_help << ";";
 #endif
    cout << "\n\t--nocompactsameurls (-c)     - " << nocompact_same_help << ";";
@@ -83,7 +83,7 @@ bool DESC(int a, int b) {
 string conns_format(vector <SQUID_Connection> conns) {
    std::stringstream result;
 
-   if (options.compactsameurls)
+   if (!options.nocompactsameurls)
       sqstat::compactSameUrls(conns);
 
    for (vector<SQUID_Connection>::iterator it = conns.begin(); it != conns.end(); ++it) {
@@ -194,7 +194,7 @@ int main(int argc, char **argv) {
             }
 #endif
          case 'c':
-            options.compactsameurls = false;
+            options.nocompactsameurls = true;
             break;
          default:
             usage(argv);

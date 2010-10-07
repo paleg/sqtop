@@ -15,7 +15,7 @@ options_c::options_c() {
    detail = false;
    ui = true;
    compactlongurls = true;
-   compactsameurls = true;
+   nocompactsameurls = false;
    freeze = false;
    do_refresh = true;
    sleep_sec = 2;
@@ -35,7 +35,7 @@ options_c options_c::copy() {
    result.detail = detail;
    result.ui = ui;
    result.compactlongurls = compactlongurls;
-   result.compactsameurls = compactsameurls;
+   result.nocompactsameurls = nocompactsameurls;
    result.freeze = freeze;
    result.sleep_sec = sleep_sec;
    result.showhelp = showhelp;

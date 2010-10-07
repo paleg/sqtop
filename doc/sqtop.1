@@ -23,7 +23,7 @@
 .\" SUCH DAMAGE.
 .\"
 .\" The following requests are required for all man pages.
-.Dd May 18, 2010
+.Dd September 18, 2010
 .\" .Os [OPERATING_SYSTEM] [version/release]
 .Dt SQTOP 1
 .Sh NAME
@@ -39,7 +39,7 @@ in a convenient way.
 .Pp
 Without options,
 .Nm sqtop
-tries to connect to a Squid proxy on 127.0.0.1 using port 3128. 
+tries to connect to a Squid proxy listening at 127.0.0.1 using port 3128. 
 .Sh OPTIONS
 .Bl -tag -width indent
 .It Fl -host Ar host ( Fl h Ar host )
@@ -54,55 +54,69 @@ Squid proxy for. Hostnames are silently ignored.
 .It Fl -users Ar userlist ( Fl u Ar userlist )
 Comma-separated list of Squid usernames to list active connections for.
 .It Fl -brief ( Fl b )
-Display brief per-connection information (without urls).
+Display brief per-connection information, omits URLs.
 .It Fl -detail ( Fl d )
-Display detailed information about each url in connection (size, username, average speed).
+Display detailed information (size, username and average speed) for each URL in each connection.
 .It Fl -full ( Fl f )
-Display full details about each url in connection (size, username, average speed, delay pool, elapsed time).
+Display full details (size, username, average speed, delay pool and elapsed time) for each URL in each connection.
 .It Fl -zero ( Fl z )
 Display zero values instead of silently omitting them.
 .It Fl -once ( Fl o )
-Disable UI mode, just print statistics once into stdout.
+Disable interactive mode, just print statistics once to stdout.
 .It Fl -refreshinterval Ar seconds ( Fl r Ar seconds )
-Set refresh interval between quering statistics from squid.
+Set the refresh-interval for interactive mode.
 .It Fl -nocompactsameurls ( Fl c )
-Show same urls in single connection.
+Don't compact the display of multiple occurrences of the same URL in a single connection.
 .It Fl -help
 Display a brief help text.
-
-.Sh User Interface (UI)
-
-When running in UI mode (without \fB--once\fP option), sqtop uses the whole screen to display active squid connections. At the top of the display it shows information about currently connected squid server and sqtop version. It also shows here any error occurs in runtime.
-
-At the bottom of the display, various totals are shown, including current/average speed, total number of ip connected and total number of connections.
-
-Any option given in command line can be changed from UI with hotkeys (with the same char as short option). List of hotkeys with current values can be shown by pressing ? in UI. In addition to options given in command line it recognizes following hotkeys:
-
-\fB/\fP search for substring in IPs, usernames or urls.
-
-\fBSPACE\fP stop statistics refreshing.
-
-\fBUP/DOWN/PAGEUP/PAGEDOWN/HOME/END\fP scroll display.
-
-\fBENTER\fP toggle showing/hiding: urls (for connections), full details (for urls).
-
-\fB?\fP show help.
-
-\fBC\fP compact long urls to fit one line.
-
-\fBs\fP change speed showing mode (\fBboth current and average\fP -> current only -> average only).
-
-\fBo\fP connections sort order (by \fBsize\fP -> current speed -> average speed -> max time).
-
-\fBq\fP quit.
-
-
+.El
+.Sh INTERACTIVE MODE
+If built with support for
+.Xr ncurses 3 , 
+.Nm
+defaults to running in interactive mode, occupying the whole screen, unless the
+.Ic --once
+option was specified on the command line.
+.Pp
+Information about the Squid server currently connected to, the version of
+.Nm
+used, as well as eventual error messages are shown at the top of the display.
+.Pp
+The bottom of the display keeps various aggregates, including current and average speed, the total number of IPs connected and the total number of connections.
+.Pp
+Any option given on the command line can be changed from within interactive mode by pressing the key corresponding to its respective short option character.
+.Pp
+In addition to the options given on the command line,
+.Nm
+recognizes the following keys when in interactive mode:
+.Bl -tag -width Fl
+.It Ic /
+Search for literal substrings in IPs, usernames or URLs.  Regular expressions are not parsed, currently.
+.It Ic <space>
+Stop refreshing.
+.It Ic UP/DOWN, PGUP/PGDN, HOME/END
+Scroll display.
+.It Ic <enter>
+Toggle displayed level of detail for the currently selected entry.
+.It Ic \&?
+Display the help screen, including current settings for options, where applicable.
+.It Ic C
+Compact long urls to fit them on one line.
+.It Ic s
+Toggle mode of display for speed detail between current and average, current only and average only.
+.It Ic B
+Toggle connection sort order between size, current speed, average speed and max time.
+.It Ic q
+Quit
+.Nm
 .El
 .Sh EXAMPLES
 .Pp
-List all currently active connections in UI mode from 192.168.2.0/24 and 172.18.118.10 to a Squid proxy running at
+List all currently active connections in interacive mode from 192.168.2.0/24 and 172.18.118.10 to a Squid proxy running at
 mysquid.example.com, port 8080 using ZePasswd as cachemgr_passwd:
 .Dl $ sqtop -h mysquid.example.com -port 8080 -p ZePasswd -H 192.168.2.0/24,172.18.118.10
+.Sh DIAGNOSTICS
+.Ex -std sqtop
 .Sh SEE ALSO
 The Squid homepage at:
 .Pa http://www.squid-cache.org .
@@ -110,11 +124,11 @@ The Squid homepage at:
 The
 .Nm sqtop
 homepage at:
-.Pa http://www.dp.uz.gov.ua/o.palij/sqtop/ .
+.Pa http://code.google.com/p/sqtop/ .
 .Sh AUTHOR
 .Nm sqtop
 was written by
 .An Oleg Palij <o.palij@gmail.com> .
 .Pp
-This man page was written by
+This man page was originally written by
 .An Marco Steinbach <coco@executive-computing.de> .
