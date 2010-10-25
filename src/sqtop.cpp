@@ -128,7 +128,9 @@ void squid_loop(void* threadarg) {
          }
          args->ui->tick();
       }
-      sleep(options.sleep_sec);
+      for (int i=0; i<options.sleep_sec; ++i) {
+         sleep(1);
+      }
    }
 }
 #endif
