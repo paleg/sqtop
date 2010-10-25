@@ -1,0 +1,13 @@
+Source: sqtop
+Section: net
+Priority: extra
+Maintainer: Oleg Palij <o.palij@gmail.com>
+Build-Depends: debhelper (>= 7), autotools-dev, libncurses5-dev
+Standards-Version: 3.8.3
+Homepage: http://code.google.com/p/sqtop/
+
+Package: sqtop
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: show info about currently active connections for a Squid
+ sqtop is a console applicaton to display information about currently active client connections for a Squid proxy in a convenient way.
