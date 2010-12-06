@@ -325,6 +325,8 @@ vector <formattedline_t> ncui::format_connections_str(vector<SQUID_Connection> c
    }
    if ((not options_ptr->brief) && (result.size() > 0))
       result.pop_back();
+   if ((result.size() > 0) && (result[result.size()-1].new_line))
+      result.pop_back();
    if (selected_index > result.size() - 1) {
       selected_index = result.size() - 1;
    } else if (selected_index < 0) {
