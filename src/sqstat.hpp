@@ -8,6 +8,8 @@
 
 #include <string>
 #include <vector>
+//exception
+#include <typeinfo>
 
 #include "options.hpp"
 

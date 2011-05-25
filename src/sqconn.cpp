@@ -11,6 +11,8 @@
 #include <netdb.h>
 //socket, connect
 #include <sys/socket.h>
+//write, read, close
+#include <unistd.h>
 
 #include "sqconn.hpp"
 

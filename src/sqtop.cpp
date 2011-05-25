@@ -12,6 +12,8 @@
 #include <iostream>
 //stringstream
 #include <sstream>
+//sleep
+#include <unistd.h>
 
 #include "strings.hpp"
 #include "Utils.hpp"

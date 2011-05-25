@@ -9,6 +9,8 @@
 #include <string>
 //sockaddr_in
 #include <netinet/in.h>
+//exception
+#include <typeinfo>
 
 class sqconnException: public std::exception {
     public:

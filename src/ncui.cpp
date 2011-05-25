@@ -5,10 +5,13 @@
  */
 
 #include <ncurses.h>
+#include <pthread.h>
 //stringstream
 #include <sstream>
 #include <climits>
 #include <algorithm>
+//bind2nd, ptr_fun
+#include <functional>
 
 #include "ncui.hpp"
 #include "Utils.hpp"
