@@ -112,7 +112,7 @@ void ncui::seterror(string text) {
 }
 
 void ncui::clearerror() {
-   error.clear();
+   error.erase();
 }
 
 void ncui::set_speeds(long aspeed, long cspeed) {
@@ -285,7 +285,7 @@ vector <formattedline_t> ncui::format_connections_str(vector<SQUID_Connection> c
          else
             increment = 1;
          selected_index = result.size() - 1;
-         search_string.clear();
+         search_string.erase();
       }
       y += coef;
 
@@ -310,7 +310,7 @@ vector <formattedline_t> ncui::format_connections_str(vector<SQUID_Connection> c
                else
                   increment = 1;
                selected_index = result.size() - 1;
-               search_string.clear();
+               search_string.erase();
             }
             y += coef;
          }
@@ -340,7 +340,7 @@ vector <formattedline_t> ncui::format_connections_str(vector<SQUID_Connection> c
 
    if (!search_string.empty()) {
       showhelphint("Failed to find '" + search_string + "'");
-      search_string.clear();
+      search_string.erase();
    }
    return result;
 }

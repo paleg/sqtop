@@ -68,7 +68,7 @@ string Utils::itos(long long num) {
 
 string Utils::ftos(double num, int prec) {
     std::stringstream ss;
-    ss << std::fixed << std::setprecision(prec) << num;
+    ss << std::setiosflags(std::ios::fixed) << std::setprecision(prec) << num;
     return (ss.str());
 }
 
