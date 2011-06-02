@@ -34,7 +34,7 @@ class ncui {
    public:
       ncui();
       ~ncui();
-      ncui(options_c *opts);
+      ncui(options_c *gopts);
       void curses_init(void);
       void print(void);
       void loop(void);
@@ -88,7 +88,7 @@ class ncui {
       std::string helphintmsg;
       time_t helptimer;
       sig_atomic_t foad;
-      options_c *options_ptr;
+      options_c *global_opts;
 
       pthread_mutex_t tick_mutex;
       pthread_mutexattr_t mattr;
