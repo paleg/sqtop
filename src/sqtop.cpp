@@ -68,7 +68,7 @@ void usage(char **argv) {
    cout << endl;
 }
 
-options_c options;
+options_c *options;
 
 #ifdef ENABLE_UI
 pthread_t sq_thread;
@@ -85,19 +85,19 @@ bool DESC(int a, int b) {
 string conns_format(vector <SQUID_Connection> conns) {
    std::stringstream result;
 
-   if (!options.nocompactsameurls)
+   if (!options->nocompactsameurls)
       sqstat::compactSameUrls(conns);
 
    for (vector<SQUID_Connection>::iterator it = conns.begin(); it != conns.end(); ++it) {
-      if (((options.Hosts.size() == 0) || Utils::IPmemberOf(options.Hosts, it->peer)) &&
-         ((options.Users.size() == 0) || Utils::UserMemberOf(options.Users, it->usernames))) {
+      if (((options->Hosts.size() == 0) || Utils::IPmemberOf(options->Hosts, it->peer)) &&
+         ((options->Users.size() == 0) || Utils::UserMemberOf(options->Users, it->usernames))) {
 
-         result << sqstat::conn_format(&options, *it);
+         result << sqstat::conn_format(options, *it);
 
-         if (not options.brief) {
+         if (not options->brief) {
             result << endl;
             for (vector<Uri_Stats>::iterator itu = it->stats.begin(); itu != it->stats.end(); ++itu) {
-               result << sqstat::stat_format(&options, *it, *itu);
+               result << sqstat::stat_format(options, *it, *itu);
                result << endl;
             }
          }
@@ -117,9 +117,9 @@ void squid_loop(void* threadarg) {
    std::vector <SQUID_Connection> stat;
    thread_args *args = reinterpret_cast<thread_args *>(threadarg);
    while (true) {
-      if (options.do_refresh) {
+      if (options->do_refresh) {
          try {
-            stat = sqs.getinfo(options.host, options.port, options.pass);
+            stat = sqs.getinfo(options->host, options->port, options->pass);
             args->ui->clearerror();
             args->ui->set_speeds(sqs.av_speed, sqs.curr_speed);
             args->ui->set_active_conn(sqs.active_conn);
@@ -130,7 +130,7 @@ void squid_loop(void* threadarg) {
          }
          args->ui->tick();
       }
-      for (int i=0; i<options.sleep_sec; ++i) {
+      for (int i=0; i<options->sleep_sec; ++i) {
          sleep(1);
       }
    }
@@ -141,31 +141,32 @@ int main(int argc, char **argv) {
    // TODO: config file ?
    int ch;
    string tempusers;
+   options = new options_c;
 
    while ((ch = getopt_long(argc, argv, "r:u:H:h:p:P:dzbfoc", longopts, NULL)) != -1) {
       switch(ch) {
          case 'd':
-            options.detail = true;
+            options->detail = true;
             break;
          case 'z':
-            options.zero = true;
+            options->zero = true;
             break;
          case 'b':
-            options.brief = true;
+            options->brief = true;
             break;
          case 'f':
-            options.detail = true;
-            options.full = true;
+            options->detail = true;
+            options->full = true;
             break;
          case 'P':
-            options.pass = optarg;
+            options->pass = optarg;
             break;
          case 'h':
-            options.host = optarg;
+            options->host = optarg;
             break;
          case 'p':
             try {
-               options.port = Utils::stol(optarg);
+               options->port = Utils::stol(optarg);
             }
             catch(string &s) {
                cerr << "Unknown port - " << s << endl;
@@ -173,24 +174,24 @@ int main(int argc, char **argv) {
             }
             break;
          case 'H':
-            options.Hosts = Utils::splitString(optarg, ",");
+            options->Hosts = Utils::splitString(optarg, ",");
             break;
          case 'u':
             tempusers = optarg;
             Utils::ToLower(tempusers);
-            options.Users = Utils::splitString(tempusers, ",");
+            options->Users = Utils::splitString(tempusers, ",");
             break;
 #ifdef ENABLE_UI
          case 'o':
-            options.ui = false;
+            options->ui = false;
             break;
          case 'r':
             try {
                long int sec = Utils::stol(optarg);
                if (sec > 0)
-                  options.sleep_sec = Utils::stol(optarg);
+                  options->sleep_sec = Utils::stol(optarg);
                else
-                  cerr << "Refresh interval should be greater than 0, using default - " << options.sleep_sec << endl;
+                  cerr << "Refresh interval should be greater than 0, using default - " << options->sleep_sec << endl;
             }
             catch(string &s) {
                cerr << "Wrong number - " << s << endl;
@@ -198,7 +199,7 @@ int main(int argc, char **argv) {
             }
 #endif
          case 'c':
-            options.nocompactsameurls = true;
+            options->nocompactsameurls = true;
             break;
          default:
             usage(argv);
@@ -212,8 +213,8 @@ int main(int argc, char **argv) {
    //sigaction(SIGINT, &sa, NULL);
 
 #ifdef ENABLE_UI
-   if (options.ui) {
-      ncui ui = ncui(&options);
+   if (options->ui) {
+      ncui ui = ncui(options);
       ui.curses_init();
 
       thread_args args;
@@ -230,17 +231,19 @@ int main(int argc, char **argv) {
       sqstat sqs;
       std::vector <SQUID_Connection> stat;
       try {
-         stat = sqs.getinfo(options.host, options.port, options.pass);
+         stat = sqs.getinfo(options->host, options->port, options->pass);
       }
       catch (sqstatException &e) {
          cerr << e.what() << endl;
          exit(1);
       }
-      cout << sqstat::head_format(&options, sqs.active_conn, stat.size(), sqs.av_speed) << endl;
+      cout << sqstat::head_format(options, sqs.active_conn, stat.size(), sqs.av_speed) << endl;
       cout << conns_format(stat) << endl;
 #ifdef ENABLE_UI
    }
 #endif
+
+   delete options;
 
    return 0;
 }
