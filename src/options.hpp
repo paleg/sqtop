@@ -26,7 +26,7 @@ class options_c {
    public:
       options_c();
 
-      options_c copy();
+      void copy(options_c *result);
 
       std::string host;
       int port;

@@ -50,7 +50,7 @@ class ncui {
       void set_active_conn(int);
       void set_stat(std::vector <SQUID_Connection>);
    private:
-      int compactlongline(std::string &line, options_c *opts);
+      int compactlongline(std::string &line);
 
       std::string edline(int linenum, std::string prompt, std::string initial);
       int min(const int a, const int b);
@@ -98,6 +98,8 @@ class ncui {
       int increment;
       unsigned int y_coef;
       unsigned int start;
+
+      options_c *opts;
 };
 
 #endif /* __NCUI_H */

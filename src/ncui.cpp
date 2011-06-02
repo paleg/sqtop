@@ -64,6 +64,8 @@ ncui::ncui(options_c *gopts) {
    y_coef = 0;
    start = 0;
    //ticks = 0;
+   opts = new options_c();
+   global_opts->copy(opts);
 }
 
 void ncui::curses_init() {
@@ -84,6 +86,7 @@ void ncui::finish() {
 ncui::~ncui() {
    pthread_mutexattr_destroy(&mattr); 
    pthread_mutex_destroy(&tick_mutex);
+   delete opts;
 }
 
 void ncui::tick() {
@@ -185,7 +188,7 @@ string ncui::helpmsg() {
    return ss.str();
 }
 
-int ncui::compactlongline(string &line, options_c *opts) {
+int ncui::compactlongline(string &line) {
    int len = line.size();
    int coef = len / COLS;
    if (len > COLS*coef) {
@@ -243,8 +246,6 @@ vector <formattedline_t> ncui::format_connections_str(vector<SQUID_Connection> c
    int coef = 0;
    unsigned int y = offset;
 
-   options_c opts;
-
    bool (*compareFunc)(SQUID_Connection, SQUID_Connection) = NULL;
    switch (global_opts->sort_order) {
       case (SORT_SIZE):
@@ -266,17 +267,14 @@ vector <formattedline_t> ncui::format_connections_str(vector<SQUID_Connection> c
 
    for (vector<SQUID_Connection>::iterator it = conns.begin(); it != conns.end(); ++it) {
       SQUID_Connection scon = *it;
+      global_opts->copy(opts);
       if ((not global_opts->brief) && (Utils::memberOf(collapsed, scon.peer))) {
-         opts = global_opts->copy();
-         opts.brief = true;
+         opts->brief = true;
       } else if ((global_opts->brief) && (Utils::memberOf(collapsed, scon.peer))) {
-         opts = global_opts->copy();
-         opts.brief = false;
-      } else {
-         opts = *global_opts;
+         opts->brief = false;
       }
-      string header_str = sqstat::conn_format(&opts, scon);
-      coef = compactlongline(header_str, global_opts);
+      string header_str = sqstat::conn_format(opts, scon);
+      coef = compactlongline(header_str);
       result.push_back(make_result(header_str, y, coef, scon, ""));
       if ((!search_string.empty()) && 
           ((scon.peer.find(search_string) != string::npos) || (Utils::VectorFindSubstr(scon.usernames, search_string)))) {
@@ -293,16 +291,14 @@ vector <formattedline_t> ncui::format_connections_str(vector<SQUID_Connection> c
           ((global_opts->brief) && (Utils::memberOf(collapsed, scon.peer)))) {
          for (vector<Uri_Stats>::iterator itu = scon.stats.begin(); itu != scon.stats.end(); ++itu) {
             Uri_Stats ustat = *itu;
+            global_opts->copy(opts);
             if (Utils::memberOf(detailed, ustat.id)) {
-               opts = global_opts->copy();
-               opts.detail = true;
-               opts.full = true;
-               opts.compactlongurls = false;
-            } else {
-               opts = *global_opts;
+               opts->detail = true;
+               opts->full = true;
+               opts->compactlongurls = false;
             }
-            string url_str = sqstat::stat_format(&opts, scon, ustat);
-            coef = compactlongline(url_str, &opts);
+            string url_str = sqstat::stat_format(opts, scon, ustat);
+            coef = compactlongline(url_str);
             result.push_back(make_result(url_str, y, coef, scon, ustat.id));
             if ((!search_string.empty()) && (ustat.uri.find(search_string) != string::npos)) {
                if (selected_index > result.size() - 1)
@@ -354,11 +350,12 @@ void ncui::print() {
 
    int offset = 3;
 
+   global_opts->copy(opts);
    // format_connections_str can set helphintmsg so it should run before header formatting
    if (error.empty()) {
       if (global_opts->Hosts.size() != 0) {
          string hosts = "Filtering by: " + Utils::joinVector(global_opts->Hosts, ", ");
-         int coef = compactlongline(hosts, global_opts);
+         int coef = compactlongline(hosts);
          int x = COLS/2 - hosts.size()/2;
          if (coef > 1) x = 0;
          mvaddstr(offset-2, x, hosts.c_str());
@@ -366,7 +363,7 @@ void ncui::print() {
       }
       if (global_opts->Users.size() != 0) {
          string users = "Filtering by users: " + Utils::joinVector(global_opts->Users, ", ");
-         int coef = compactlongline(users, global_opts);
+         int coef = compactlongline(users);
          int x = COLS/2 - users.size()/2;
          if (coef > 1) x = 0;
          mvaddstr(offset-2, x, users.c_str());
