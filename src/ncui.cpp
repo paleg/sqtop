@@ -17,45 +17,47 @@
 #include "Utils.hpp"
 #include "strings.hpp"
 
+namespace sqtop {
+
 using std::string;
 using std::vector;
 using std::endl;
 
-std::ostream& operator<<( std::ostream& os, const SPEED_MODE& mode )
+std::ostream& operator<<( std::ostream& os, const Options::SPEED_MODE& mode )
 {
    switch (mode) {
-      case SPEED_AVERAGE: os << "average only"; break;
-      case SPEED_CURRENT: os << "current only (if available)"; break;
-      case SPEED_MIXED: os << "both current and average"; break;
+      case Options::SPEED_AVERAGE: os << "average only"; break;
+      case Options::SPEED_CURRENT: os << "current only (if available)"; break;
+      case Options::SPEED_MIXED: os << "both current and average"; break;
    }
    return os;
 }
 
-std::ostream& operator<<( std::ostream& os, const SORT_ORDER& order ) {
+std::ostream& operator<<( std::ostream& os, const Options::SORT_ORDER& order ) {
    switch (order) {
-      case SORT_SIZE: os << "by size"; break;
-      case SORT_CURRENT_SPEED: os << "by current speed"; break;
-      case SORT_AVERAGE_SPEED: os << "by average speed"; break;
-      case SORT_MAX_TIME: os << "by max time"; break;
+      case Options::SORT_SIZE: os << "by size"; break;
+      case Options::SORT_CURRENT_SPEED: os << "by current speed"; break;
+      case Options::SORT_AVERAGE_SPEED: os << "by average speed"; break;
+      case Options::SORT_MAX_TIME: os << "by max time"; break;
    }
    return os;
 }
 
-inline void operator++(SPEED_MODE& mode, int) {
-   mode = SPEED_MODE(mode + 1);
+inline void operator++(Options::SPEED_MODE& mode, int) {
+   mode = Options::SPEED_MODE(mode + 1);
 }
 
-inline void operator++(SORT_ORDER& order, int) {
-   order = SORT_ORDER(order + 1);
+inline void operator++(Options::SORT_ORDER& order, int) {
+   order = Options::SORT_ORDER(order + 1);
 }
 
-ncui::ncui(options_c *gopts) {
+ncui::ncui(Options* pgOpts) {
    pthread_mutexattr_init(&mattr);
    pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_ERRORCHECK);
    pthread_mutex_init(&tick_mutex, &mattr);
    foad = 0;
-   global_opts = gopts;
-   global_opts->showhelphint = false;
+   pGlobalOpts = pgOpts;
+   pGlobalOpts->showhelphint = false;
    helptimer = 0;
    helphint_time = 2;
    selected_index = 0;
@@ -64,11 +66,17 @@ ncui::ncui(options_c *gopts) {
    y_coef = 0;
    start = 0;
    //ticks = 0;
-   opts = new options_c();
-   global_opts->copy(opts);
+   pOpts = new Options();
+   pOpts->CopyFrom(pGlobalOpts);
 }
 
-void ncui::curses_init() {
+ncui::~ncui() {
+   pthread_mutexattr_destroy(&mattr); 
+   pthread_mutex_destroy(&tick_mutex);
+   delete pOpts;
+}
+
+void ncui::CursesInit() {
    (void) initscr();      /* initialize the curses library */
    keypad(stdscr, TRUE);  /* enable keyboard mapping */
    (void) nonl();         /* tell curses not to do NL->CR/NL on output */
@@ -77,57 +85,51 @@ void ncui::curses_init() {
    halfdelay(2);
 }
 
-void ncui::finish() {
+void ncui::CursesFinish() {
    clear();
    refresh();
    endwin();
 }
 
-ncui::~ncui() {
-   pthread_mutexattr_destroy(&mattr); 
-   pthread_mutex_destroy(&tick_mutex);
-   delete opts;
-}
-
-void ncui::tick() {
+void ncui::Tick() {
    debug = "";
    //ticks++;
-   //addwatch("ticks", Utils::itos(ticks));
+   //AddWatch("ticks", Utils::itos(ticks));
    pthread_mutex_lock(&tick_mutex);
-   if (global_opts->showhelphint && (time(NULL) - helptimer > helphint_time)) {
-      global_opts->showhelphint = false;
+   if (pGlobalOpts->showhelphint && (time(NULL) - helptimer > helphint_time)) {
+      pGlobalOpts->showhelphint = false;
    }
-   print();
+   Print();
    pthread_mutex_unlock(&tick_mutex);
 }
 
-void ncui::showhelphint(string text) {
+void ncui::ShowHelpHint(string text) {
    if (error.empty()) {
       helphintmsg = text;
       helptimer = time(NULL);
-      global_opts->showhelphint = true;
+      pGlobalOpts->showhelphint = true;
    }
 }
 
-void ncui::seterror(string text) {
+void ncui::SetError(string text) {
    error = text;
-   tick();
+   Tick();
 }
 
-void ncui::clearerror() {
+void ncui::ClearError() {
    error.erase();
 }
 
-void ncui::set_speeds(long aspeed, long cspeed) {
+void ncui::SetSpeeds(long aspeed, long cspeed) {
    av_speed = aspeed;
    curr_speed = cspeed;
 }
 
-void ncui::set_active_conn(int conn) {
+void ncui::SetActiveConnCount(int conn) {
    act_conn = conn;
 }
 
-void ncui::set_stat(std::vector <SQUID_Connection> stat) {
+void ncui::SetStat(std::vector<SQUID_Connection> stat) {
    sqconns = stat;
 }
 
@@ -139,7 +141,7 @@ string ncui::b2s(bool value) {
    }
 }
 
-void ncui::addwatch(string prefix, string value) {
+void ncui::AddWatch(string prefix, string value) {
    if (!debug.empty()) 
       debug += ", ";
    debug += prefix + "=" + value;
@@ -148,36 +150,36 @@ void ncui::addwatch(string prefix, string value) {
 string ncui::helpmsg() {
    std::stringstream ss;
    ss << "Output:" << endl;
-   ss << " d - " << detail_help << " " << b2s(global_opts->detail) << endl;
-   ss << " z - " << zero_help << " " << b2s(global_opts->zero) << endl;
-   ss << " f - " << full_help << " " << b2s(global_opts->full) << endl;
-   ss << " b - " << brief_help << " " << b2s(global_opts->brief) << endl;
-   ss << " C - compact long urls to fit one line" << " " << b2s(global_opts->compactlongurls) << endl;
-   ss << " c - " << nocompact_same_help << " " << b2s(global_opts->nocompactsameurls) << endl;
-   ss << " s - " << "speed showing mode (" << global_opts->speed_mode << ")" << endl;
-   ss << " o - " << "connections sort order (" << global_opts->sort_order << ")" << endl;
-   ss << " SPACE - stop refreshing " << b2s(!global_opts->do_refresh) << endl;
+   ss << " d - " << detail_help << " " << b2s(pGlobalOpts->detail) << endl;
+   ss << " z - " << zero_help << " " << b2s(pGlobalOpts->zero) << endl;
+   ss << " f - " << full_help << " " << b2s(pGlobalOpts->full) << endl;
+   ss << " b - " << brief_help << " " << b2s(pGlobalOpts->brief) << endl;
+   ss << " C - compact long urls to fit one line" << " " << b2s(pGlobalOpts->compactlongurls) << endl;
+   ss << " c - " << nocompact_same_help << " " << b2s(pGlobalOpts->nocompactsameurls) << endl;
+   ss << " s - " << "speed showing mode (" << pGlobalOpts->speed_mode << ")" << endl;
+   ss << " o - " << "connections sort order (" << pGlobalOpts->sort_order << ")" << endl;
+   ss << " SPACE - stop refreshing " << b2s(!pGlobalOpts->do_refresh) << endl;
    ss << " UP/DOWN/PAGE_UP/PAGE_DOWN/HOME/END keys - scroll display" << endl;
    ss << " ENTER - toggle showing/hiding: urls (for connections), full details (for urls)" << endl;
    ss << endl;
    ss << "Filtering:" << endl;
    string hosts = "";
-   if (!global_opts->Hosts.empty())
-      hosts = " (" + Utils::joinVector(global_opts->Hosts, ",") + ")";
+   if (!pGlobalOpts->Hosts.empty())
+      hosts = " (" + Utils::JoinVector(pGlobalOpts->Hosts, ",") + ")";
    ss << " H - " << hosts_help << hosts << endl;
    string users = "";
-   if (!global_opts->Users.empty())
-      users = " (" + Utils::joinVector(global_opts->Users, ",") + ")";
+   if (!pGlobalOpts->Users.empty())
+      users = " (" + Utils::JoinVector(pGlobalOpts->Users, ",") + ")";
    ss << " u - " << users_help << users << endl;
    ss << endl;
    ss << "Squid connection:" << endl;
-   ss << " h - " << host_help << " (" << global_opts->host << ")" << endl;
-   ss << " p - " << port_help << " (" << Utils::itos(global_opts->port) << ")" << endl;
+   ss << " h - " << host_help << " (" << pGlobalOpts->host << ")" << endl;
+   ss << " p - " << port_help << " (" << Utils::itos(pGlobalOpts->port) << ")" << endl;
    string pass = "";
-   if (!global_opts->pass.empty())
-      pass = " (" + global_opts->pass + ")";
+   if (!pGlobalOpts->pass.empty())
+      pass = " (" + pGlobalOpts->pass + ")";
    ss << " P - " << passwd_help << pass << endl;
-   ss << " r - " << refresh_interval_help << " (" << Utils::itos(global_opts->sleep_sec) << ")" << endl;
+   ss << " r - " << refresh_interval_help << " (" << Utils::itos(pGlobalOpts->sleep_sec) << ")" << endl;
    ss << endl;
    ss << "General:" << endl;
    ss << " / - search for substring in IPs, usernames and urls" << endl;
@@ -188,13 +190,13 @@ string ncui::helpmsg() {
    return ss.str();
 }
 
-int ncui::compactlongline(string &line) {
+int ncui::CompactLongLine(string &line) {
    int len = line.size();
    int coef = len / COLS;
    if (len > COLS*coef) {
       coef++;
    }
-   if (( coef > 1) && opts->compactlongurls) {
+   if (( coef > 1) && pOpts->compactlongurls) {
       int extra_chars = len - COLS + 3;
       line.erase(len/2-extra_chars/2, extra_chars);
       line.insert(len/2-extra_chars/2, "...");
@@ -204,22 +206,22 @@ int ncui::compactlongline(string &line) {
    return coef;
 }
 
-bool toFilter(SQUID_Connection scon, options_c *options) {
-   if (((options->Hosts.size() == 0) || Utils::IPmemberOf(options->Hosts, scon.peer)) &&
-       ((options->Users.size() == 0) || Utils::UserMemberOf(options->Users, scon.usernames))) {
+/* static */ bool ncui::Filter(SQUID_Connection scon, Options* pOpts) {
+   if (((pOpts->Hosts.size() == 0) || Utils::IPMemberOf(pOpts->Hosts, scon.peer)) &&
+       ((pOpts->Users.size() == 0) || Utils::UserMemberOf(pOpts->Users, scon.usernames))) {
          return false;
    }
    return true;
 }
 
-vector<SQUID_Connection> ncui::filter_conns(vector<SQUID_Connection> in) {
+vector<SQUID_Connection> ncui::FilterConns(vector<SQUID_Connection> in) {
    vector<SQUID_Connection>::iterator it;
-   it = std::remove_if( in.begin(), in.end(), std::bind2nd(std::ptr_fun(toFilter), global_opts));
+   it = std::remove_if( in.begin(), in.end(), std::bind2nd(std::ptr_fun(Filter), pGlobalOpts) );
    in.erase(it, in.end());
    return in;
 }
 
-formattedline_t make_result(string str, int y, int coef, SQUID_Connection sconn, string id) {
+formattedline_t ncui::MakeResult(string str, int y, int coef, SQUID_Connection sconn, string id) {
    formattedline_t t;
    t.str = str;
    t.y = y;
@@ -231,7 +233,7 @@ formattedline_t make_result(string str, int y, int coef, SQUID_Connection sconn,
    return t;
 }
 
-formattedline_t make_new_line(int y) {
+formattedline_t ncui::MakeNewLine(int y) {
    formattedline_t t;
    t.new_line = true;
    t.y = y;
@@ -240,24 +242,24 @@ formattedline_t make_new_line(int y) {
    return t;
 }
 
-vector <formattedline_t> ncui::format_connections_str(vector<SQUID_Connection> conns, int offset) {
-//   addwatch("orig", Utils::itos(sqconns.size()));
-   vector <formattedline_t> result;
+vector<formattedline_t> ncui::FormatConnections(vector<SQUID_Connection> conns, int offset) {
+//   AddWatch("orig", Utils::itos(sqconns.size()));
+   vector<formattedline_t> result;
    int coef = 0;
    unsigned int y = offset;
 
    bool (*compareFunc)(SQUID_Connection, SQUID_Connection) = NULL;
-   switch (global_opts->sort_order) {
-      case (SORT_SIZE):
+   switch (pGlobalOpts->sort_order) {
+      case Options::SORT_SIZE:
          compareFunc = &sqstat::CompareSIZE;
          break;
-      case SORT_CURRENT_SPEED:
+      case Options::SORT_CURRENT_SPEED:
          compareFunc = &sqstat::CompareCURRSPEED;
          break;
-      case SORT_AVERAGE_SPEED:
+      case Options::SORT_AVERAGE_SPEED:
          compareFunc = &sqstat::CompareAVSPEED;
          break;
-      case SORT_MAX_TIME:
+      case Options::SORT_MAX_TIME:
          compareFunc = &sqstat::CompareTIME;
          break;
    };
@@ -267,15 +269,15 @@ vector <formattedline_t> ncui::format_connections_str(vector<SQUID_Connection> c
 
    for (vector<SQUID_Connection>::iterator it = conns.begin(); it != conns.end(); ++it) {
       SQUID_Connection scon = *it;
-      global_opts->copy(opts);
-      if ((not global_opts->brief) && (Utils::memberOf(collapsed, scon.peer))) {
-         opts->brief = true;
-      } else if ((global_opts->brief) && (Utils::memberOf(collapsed, scon.peer))) {
-         opts->brief = false;
+      pOpts->CopyFrom(pGlobalOpts);
+      if ((not pGlobalOpts->brief) && (Utils::MemberOf(collapsed, scon.peer))) {
+         pOpts->brief = true;
+      } else if ((pGlobalOpts->brief) && (Utils::MemberOf(collapsed, scon.peer))) {
+         pOpts->brief = false;
       }
-      string header_str = sqstat::conn_format(opts, scon);
-      coef = compactlongline(header_str);
-      result.push_back(make_result(header_str, y, coef, scon, ""));
+      string header_str = sqstat::ConnFormat(pOpts, scon);
+      coef = CompactLongLine(header_str);
+      result.push_back(MakeResult(header_str, y, coef, scon, ""));
       if ((!search_string.empty()) && 
           ((scon.peer.find(search_string) != string::npos) || (Utils::VectorFindSubstr(scon.usernames, search_string)))) {
          if (selected_index > result.size() - 1)
@@ -287,19 +289,19 @@ vector <formattedline_t> ncui::format_connections_str(vector<SQUID_Connection> c
       }
       y += coef;
 
-      if (((not global_opts->brief) && (not Utils::memberOf(collapsed, scon.peer))) ||
-          ((global_opts->brief) && (Utils::memberOf(collapsed, scon.peer)))) {
+      if (((not pGlobalOpts->brief) && (not Utils::MemberOf(collapsed, scon.peer))) ||
+          ((pGlobalOpts->brief) && (Utils::MemberOf(collapsed, scon.peer)))) {
          for (vector<Uri_Stats>::iterator itu = scon.stats.begin(); itu != scon.stats.end(); ++itu) {
             Uri_Stats ustat = *itu;
-            global_opts->copy(opts);
-            if (Utils::memberOf(detailed, ustat.id)) {
-               opts->detail = true;
-               opts->full = true;
-               opts->compactlongurls = false;
+            pOpts->CopyFrom(pGlobalOpts);
+            if (Utils::MemberOf(detailed, ustat.id)) {
+               pOpts->detail = true;
+               pOpts->full = true;
+               pOpts->compactlongurls = false;
             }
-            string url_str = sqstat::stat_format(opts, scon, ustat);
-            coef = compactlongline(url_str);
-            result.push_back(make_result(url_str, y, coef, scon, ustat.id));
+            string url_str = sqstat::StatFormat(pOpts, scon, ustat);
+            coef = CompactLongLine(url_str);
+            result.push_back(MakeResult(url_str, y, coef, scon, ustat.id));
             if ((!search_string.empty()) && (ustat.uri.find(search_string) != string::npos)) {
                if (selected_index > result.size() - 1)
                   increment = -1;
@@ -311,8 +313,8 @@ vector <formattedline_t> ncui::format_connections_str(vector<SQUID_Connection> c
             y += coef;
          }
       }
-      if ((not global_opts->brief) || (Utils::memberOf(collapsed, scon.peer))) {
-         result.push_back(make_new_line(y));
+      if ((not pGlobalOpts->brief) || (Utils::MemberOf(collapsed, scon.peer))) {
+         result.push_back(MakeNewLine(y));
          if (selected_index == result.size() - 1) {
             // we dont want to highligth empty line, so jump to next/prev (depends on increment) line
             int j = 1;
@@ -322,7 +324,7 @@ vector <formattedline_t> ncui::format_connections_str(vector<SQUID_Connection> c
          y++;
       }
    }
-   if ((not global_opts->brief) && (result.size() > 0))
+   if ((not pGlobalOpts->brief) && (result.size() > 0))
       result.pop_back();
    if ((result.size() > 0) && (result[result.size()-1].new_line))
       result.pop_back();
@@ -335,55 +337,55 @@ vector <formattedline_t> ncui::format_connections_str(vector<SQUID_Connection> c
       result[selected_index].highlighted = true;
 
    if (!search_string.empty()) {
-      showhelphint("Failed to find '" + search_string + "'");
+      ShowHelpHint("Failed to find '" + search_string + "'");
       search_string.erase();
    }
    return result;
 }
 
-void ncui::print() {
-   if (global_opts->freeze) return;
+void ncui::Print() {
+   if (pGlobalOpts->freeze) return;
    clear();
 
    std::stringstream header_r, header_l, active_conn, active_ips, average_speed, status;
-   vector <formattedline_t> to_print;
+   vector<formattedline_t> to_print;
 
    int offset = 3;
 
-   global_opts->copy(opts);
-   // format_connections_str can set helphintmsg so it should run before header formatting
+   pOpts->CopyFrom(pGlobalOpts);
+   // FormatConnections can set helphintmsg so it should run before header formatting
    if (error.empty()) {
-      if (global_opts->Hosts.size() != 0) {
-         string hosts = "Filtering by: " + Utils::joinVector(global_opts->Hosts, ", ");
-         int coef = compactlongline(hosts);
+      if (pGlobalOpts->Hosts.size() != 0) {
+         string hosts = "Filtering by: " + Utils::JoinVector(pGlobalOpts->Hosts, ", ");
+         int coef = CompactLongLine(hosts);
          int x = COLS/2 - hosts.size()/2;
          if (coef > 1) x = 0;
          mvaddstr(offset-2, x, hosts.c_str());
          offset += coef;
       }
-      if (global_opts->Users.size() != 0) {
-         string users = "Filtering by users: " + Utils::joinVector(global_opts->Users, ", ");
-         int coef = compactlongline(users);
+      if (pGlobalOpts->Users.size() != 0) {
+         string users = "Filtering by users: " + Utils::JoinVector(pGlobalOpts->Users, ", ");
+         int coef = CompactLongLine(users);
          int x = COLS/2 - users.size()/2;
          if (coef > 1) x = 0;
          mvaddstr(offset-2, x, users.c_str());
          offset += coef;
       }
-      if (!global_opts->do_refresh) {
+      if (!pGlobalOpts->do_refresh) {
          string msg = "Statistics refreshing disabled";
          mvaddstr(offset-2, COLS/2 - msg.size()/2, msg.c_str());
          offset++;
       }
 
-      vector<SQUID_Connection> sqconns_filtered = filter_conns(sqconns);
+      vector<SQUID_Connection> sqconns_filtered = FilterConns(sqconns);
 
-      if (!global_opts->nocompactsameurls)
-         sqstat::compactSameUrls(sqconns_filtered);
-      to_print = format_connections_str(sqconns_filtered, offset);
+      if (!pGlobalOpts->nocompactsameurls)
+         sqstat::CompactSameUrls(sqconns_filtered);
+      to_print = FormatConnections(sqconns_filtered, offset);
    }
 
    // HEADER: print help hint
-   if (global_opts->showhelphint) {
+   if (pGlobalOpts->showhelphint) {
       std::stringstream helpstr;
       helpstr << " " << helphintmsg << " ";
       mvaddstr(0, 0, helpstr.str().c_str());
@@ -394,7 +396,7 @@ void ncui::print() {
       return;
    // or print some info
    } else {
-      header_r << "Connected to " << global_opts->host << ":" << global_opts->port;
+      header_r << "Connected to " << pGlobalOpts->host << ":" << pGlobalOpts->port;
       header_l << PACKAGE_NAME << "-" << VERSION << " " << copyright;
       mvaddstr(0, 0, header_r.str().c_str());
       mvaddstr(0, COLS-header_l.str().size(), header_l.str().c_str());
@@ -406,7 +408,7 @@ void ncui::print() {
       unsigned int max_y = LINES - 1; // screen height
 
       // Connections list
-      if (!global_opts->showhelp) {
+      if (!pGlobalOpts->showhelp) {
          if (to_print.size() > 0) {
             // some magic to determine visible part of connections according to selected line
             if (((to_print[selected_index].y) < (y_coef + offset)) && (increment < 0)) {
@@ -440,8 +442,8 @@ void ncui::print() {
                mvaddstr(y, 0, fline.str.c_str());
 
                if (fline.highlighted) {
-                  //addwatch("id", fline.id);
-                  //addwatch("peer", fline.sconn.peer);
+                  //AddWatch("id", fline.id);
+                  //AddWatch("peer", fline.sconn.peer);
                   std::string::size_type found;
                   string temps;
                   for (unsigned int st = 0; st < fline.coef; st++) {
@@ -449,26 +451,26 @@ void ncui::print() {
                      found = temps.find_first_not_of(" ");
                      mvchgat(y+st, found, temps.size()-found, A_REVERSE, 0, NULL);
                   }
-                  /*addwatch("found", Utils::itos(found));
-                  addwatch("size", Utils::itos(fline.str.size()));
-                  addwatch("h_coef", Utils::itos(fline.coef));*/
+                  /*AddWatch("found", Utils::itos(found));
+                  AddWatch("size", Utils::itos(fline.str.size()));
+                  AddWatch("h_coef", Utils::itos(fline.coef));*/
                   selected_t = fline;
                }
             }
-            /*addwatch("incr", Utils::itos(increment));
-            addwatch("max_y", Utils::itos(max_y));
-            addwatch("y_coef", Utils::itos(y_coef));
-            addwatch("start", Utils::itos(start));
-            addwatch("selec_idx", Utils::itos(selected_index));
-            addwatch("h_y", Utils::itos(to_print[selected_index].y));
-            addwatch("to_p[start].y", Utils::itos(to_print[start].y));*/
+            /*AddWatch("incr", Utils::itos(increment));
+            AddWatch("max_y", Utils::itos(max_y));
+            AddWatch("y_coef", Utils::itos(y_coef));
+            AddWatch("start", Utils::itos(start));
+            AddWatch("selec_idx", Utils::itos(selected_index));
+            AddWatch("h_y", Utils::itos(to_print[selected_index].y));
+            AddWatch("to_p[start].y", Utils::itos(to_print[start].y));*/
          }
       } else {
          mvaddstr(offset, 0, helpmsg().c_str());
       }
 
       // FOOTER
-      string speed = sqstat::speeds_format(global_opts->speed_mode, av_speed, curr_speed);
+      string speed = sqstat::SpeedsFormat(pGlobalOpts->speed_mode, av_speed, curr_speed);
       speed[0] = toupper(speed[0]);
       status << speed << "\t\t";
       status << "Active IPs: " << sqconns.size() << "\t\t";
@@ -485,23 +487,23 @@ void ncui::print() {
    refresh();
 }
 
-void ncui::toggle_action() {
+void ncui::ToggleAction() {
    if (selected_t.id != "") {
-      if (Utils::memberOf(detailed, selected_t.id))
+      if (Utils::MemberOf(detailed, selected_t.id))
          Utils::VectorDeleteStr(detailed, selected_t.id);
       else
          detailed.push_back(selected_t.id);
       return;
    }
    else {
-      if (Utils::memberOf(collapsed, selected_t.sconn.peer))
+      if (Utils::MemberOf(collapsed, selected_t.sconn.peer))
          Utils::VectorDeleteStr(collapsed, selected_t.sconn.peer);
       else
          collapsed.push_back(selected_t.sconn.peer);
    }
 }
 
-void ncui::loop() {
+void ncui::Loop() {
    string inp;
    int i;
    bool dotick;
@@ -511,164 +513,164 @@ void ncui::loop() {
       i = getch();
       switch (i) {
          case 'd':
-            if (global_opts->detail) {
-               showhelphint("Detailed output OFF");
+            if (pGlobalOpts->detail) {
+               ShowHelpHint("Detailed output OFF");
             } else {
-               showhelphint("Detailed output ON");
+               ShowHelpHint("Detailed output ON");
             }
-            global_opts->detail = !global_opts->detail;
+            pGlobalOpts->detail = !pGlobalOpts->detail;
             break;
          case 'z':
-            if (global_opts->zero) {
-               showhelphint("Showing zero values OFF");
+            if (pGlobalOpts->zero) {
+               ShowHelpHint("Showing zero values OFF");
             } else {
-               showhelphint("Showing zero values ON");
+               ShowHelpHint("Showing zero values ON");
             }
-            global_opts->zero = !global_opts->zero;
+            pGlobalOpts->zero = !pGlobalOpts->zero;
             break;
          case 'f':
-            if (global_opts->full) {
-               showhelphint("Showing full details OFF");
+            if (pGlobalOpts->full) {
+               ShowHelpHint("Showing full details OFF");
             } else {
-               showhelphint("Showing full details ON");
-               global_opts->detail = true;
+               ShowHelpHint("Showing full details ON");
+               pGlobalOpts->detail = true;
             }
-            global_opts->full = !global_opts->full;
+            pGlobalOpts->full = !pGlobalOpts->full;
             break;
         case 'P':
-            global_opts->freeze = true;
+            pGlobalOpts->freeze = true;
             try {
-               inp = edline(0, "Cachemgr password", global_opts->pass);
-               global_opts->pass = inp;
+               inp = EdLine(0, "Cachemgr password", pGlobalOpts->pass);
+               pGlobalOpts->pass = inp;
             }
             catch (string &s) {
-               showhelphint(s);
+               ShowHelpHint(s);
             }
-            global_opts->freeze = false;
+            pGlobalOpts->freeze = false;
             break;
          case 'H':
-            global_opts->freeze = true;
+            pGlobalOpts->freeze = true;
             try {
-               inp = edline(0, "Hosts to show", Utils::joinVector(global_opts->Hosts, ","));
-               global_opts->Hosts = Utils::splitString(inp, ",");
+               inp = EdLine(0, "Hosts to show", Utils::JoinVector(pGlobalOpts->Hosts, ","));
+               pGlobalOpts->Hosts = Utils::SplitString(inp, ",");
             }
             catch (string &s) {
-               showhelphint(s);
+               ShowHelpHint(s);
             }
-            global_opts->freeze = false;
+            pGlobalOpts->freeze = false;
             break;
          case 'u':
-            global_opts->freeze = true;
+            pGlobalOpts->freeze = true;
             try {
-               inp = edline(0, "Users to show", Utils::joinVector(global_opts->Users, ","));
-               global_opts->Users = Utils::splitString(inp, ",");
+               inp = EdLine(0, "Users to show", Utils::JoinVector(pGlobalOpts->Users, ","));
+               pGlobalOpts->Users = Utils::SplitString(inp, ",");
             }
             catch (string &s) {
-               showhelphint(s);
+               ShowHelpHint(s);
             }
-            global_opts->freeze = false;
+            pGlobalOpts->freeze = false;
             break;
          case 'q':
             foad = 1;
             break;
          case ' ':
-            global_opts->do_refresh = !global_opts->do_refresh;
+            pGlobalOpts->do_refresh = !pGlobalOpts->do_refresh;
             break;
          case 'b':
             collapsed.clear();
-            if (global_opts->brief) {
-               showhelphint("Brief output OFF");
+            if (pGlobalOpts->brief) {
+               ShowHelpHint("Brief output OFF");
             } else {
-               showhelphint("Brief output ON");
+               ShowHelpHint("Brief output ON");
             }
-            global_opts->brief = !global_opts->brief;
+            pGlobalOpts->brief = !pGlobalOpts->brief;
             break;
          case 'C':
-            if (global_opts->compactlongurls) {
-               showhelphint("Compacting long urls OFF");
+            if (pGlobalOpts->compactlongurls) {
+               ShowHelpHint("Compacting long urls OFF");
             } else {
-               showhelphint("Compacting long urls ON");
+               ShowHelpHint("Compacting long urls ON");
             }
-            global_opts->compactlongurls = !global_opts->compactlongurls;
+            pGlobalOpts->compactlongurls = !pGlobalOpts->compactlongurls;
             break;
          case 'c':
-            if (!global_opts->nocompactsameurls) {
-               showhelphint("Compacting same urls OFF");
+            if (!pGlobalOpts->nocompactsameurls) {
+               ShowHelpHint("Compacting same urls OFF");
             } else {
-               showhelphint("Compacting same urls ON");
+               ShowHelpHint("Compacting same urls ON");
             }
-            global_opts->nocompactsameurls = !global_opts->nocompactsameurls;
+            pGlobalOpts->nocompactsameurls = !pGlobalOpts->nocompactsameurls;
             break;
          case 's':
-            if (global_opts->speed_mode == SPEED_CURRENT) {
-               global_opts->speed_mode = SPEED_MIXED;
+            if (pGlobalOpts->speed_mode == Options::SPEED_CURRENT) {
+               pGlobalOpts->speed_mode = Options::SPEED_MIXED;
             } else {
-               global_opts->speed_mode++;
+               pGlobalOpts->speed_mode++;
             }
             ss.str("");
-            ss << "Speed showing mode - " << global_opts->speed_mode;
-            showhelphint(ss.str());
+            ss << "Speed showing mode - " << pGlobalOpts->speed_mode;
+            ShowHelpHint(ss.str());
             break;
          case 'o':
-            if (global_opts->sort_order == SORT_MAX_TIME) {
-               global_opts->sort_order = SORT_SIZE;
+            if (pGlobalOpts->sort_order == Options::SORT_MAX_TIME) {
+               pGlobalOpts->sort_order = Options::SORT_SIZE;
             } else {
-               global_opts->sort_order++;
+               pGlobalOpts->sort_order++;
             }
             ss.str("");
-            ss << "Connections sort order - " << global_opts->sort_order;
-            showhelphint(ss.str());
+            ss << "Connections sort order - " << pGlobalOpts->sort_order;
+            ShowHelpHint(ss.str());
             break;
          case 'h':
-            global_opts->freeze = true;
+            pGlobalOpts->freeze = true;
             try {
-               inp = edline(0, "Squid host", global_opts->host);
-               if (inp != "") global_opts->host = inp;
+               inp = EdLine(0, "Squid host", pGlobalOpts->host);
+               if (inp != "") pGlobalOpts->host = inp;
             }
             catch (string &s) {
-               showhelphint(s);
+               ShowHelpHint(s);
             }
-            global_opts->freeze = false;
+            pGlobalOpts->freeze = false;
             break;
          case '/':
-            global_opts->freeze = true;
+            pGlobalOpts->freeze = true;
             try {
-               inp = edline(0, "Search for", "");
+               inp = EdLine(0, "Search for", "");
                if (inp != "") search_string = inp;
             }
             catch (string &s) {
-               showhelphint(s);
+               ShowHelpHint(s);
             }
-            global_opts->freeze = false;
+            pGlobalOpts->freeze = false;
             break;
          case 'p':
-            global_opts->freeze = true;
+            pGlobalOpts->freeze = true;
             try {
-               inp = edline(0, "Squid port", Utils::itos(global_opts->port));
+               inp = EdLine(0, "Squid port", Utils::itos(pGlobalOpts->port));
                if (inp != "") {
                   long int port = Utils::stol(inp);
-                  global_opts->port = port;
+                  pGlobalOpts->port = port;
                }
             }
             catch(string &s) {
-               showhelphint(s);
+               ShowHelpHint(s);
             }
-            global_opts->freeze = false;
+            pGlobalOpts->freeze = false;
             break;
          case 'r':
-            global_opts->freeze = true;
+            pGlobalOpts->freeze = true;
             try {
-               inp = edline(0, "Refresh interval (sec)", Utils::itos(global_opts->sleep_sec));
+               inp = EdLine(0, "Refresh interval (sec)", Utils::itos(pGlobalOpts->sleep_sec));
                long int sec = Utils::stol(inp);
                if (sec > 0)
-                  global_opts->sleep_sec = sec;
+                  pGlobalOpts->sleep_sec = sec;
                else
-                  showhelphint("Invalid refresh interval");
+                  ShowHelpHint("Invalid refresh interval");
             }
             catch(string &s) {
-               showhelphint(s);
+               ShowHelpHint(s);
             }
-            global_opts->freeze = false;
+            pGlobalOpts->freeze = false;
             break;
          case KEY_DOWN:
             selected_index++;
@@ -682,7 +684,7 @@ void ncui::loop() {
             break;
          case KEY_ENTER:
          case '\r':
-            toggle_action();
+            ToggleAction();
             break;
          case KEY_NPAGE:
             selected_index += page_size;
@@ -709,13 +711,13 @@ void ncui::loop() {
             dotick = false;
             break;
          case '?':
-            global_opts->showhelp = !global_opts->showhelp;
+            pGlobalOpts->showhelp = !pGlobalOpts->showhelp;
             break;
          default:
-            showhelphint("Press ? for help");
+            ShowHelpHint("Press ? for help");
             break;
       }
-      if (dotick) tick();
+      if (dotick) Tick();
    }
 }
 
@@ -723,7 +725,7 @@ int ncui::min(const int a, const int b) {
     return a < b ? a : b;
 }
 
-string ncui::edline(int linenum, string prompt, string initial) {
+string ncui::EdLine(int linenum, string prompt, string initial) {
     int c;
     unsigned int pos, xstart, off=0;
     string str = "";
@@ -819,4 +821,5 @@ string ncui::edline(int linenum, string prompt, string initial) {
     }
 }
 
+}
 // vim: ai ts=3 sts=3 et sw=3 expandtab

@@ -1,4 +1,4 @@
-#include "../config.h"
+#include "config.h"
 
 #ifndef __STRINGS_H
 #define __STRINGS_H

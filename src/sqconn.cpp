@@ -18,6 +18,8 @@
 
 using std::string;
 
+namespace sqtop {
+
 sqconn::sqconn() {
     m_sock=0;
 }
@@ -30,7 +32,7 @@ sqconn::~sqconn() {
 }
 
 void sqconn::open(string server, int port) {
-    struct hostent *he;
+    struct hostent* he;
 
     m_sock = socket(AF_INET, SOCK_STREAM, 6);
     if(m_sock < 0) throw sqconnException(strerror(errno));
@@ -58,16 +60,19 @@ int sqconn::operator << (const string str) {
     return f+s;
 }
 
-int sqconn::operator >> (string &result) {
+int sqconn::operator >> (string& rResult) {
     char ch;
     int data;
-    result="";
+    rResult="";
     data = read(m_sock, &ch, 1);
     while ((data!=0) && (data!=-1)) {
-          if (ch>30) result.push_back(ch);
+          if (ch>30) rResult.push_back(ch);
           if (ch==10) break;
           data = read(m_sock, &ch, 1);
     }
     if (data == -1) throw sqconnException(strerror(errno));
     return data;
 }
+
+}
+// vim: ai ts=3 sts=3 et sw=3 expandtab

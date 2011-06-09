@@ -7,13 +7,13 @@
 #include <pthread.h>
 #endif
 
+//sleep
+#include <unistd.h>
 #include <getopt.h>
 #include <cstdlib>
 #include <iostream>
 //stringstream
 #include <sstream>
-//sleep
-#include <unistd.h>
 
 #include "strings.hpp"
 #include "Utils.hpp"
@@ -24,6 +24,8 @@ using std::cout;
 using std::cerr;
 using std::endl;
 using std::vector;
+
+using namespace sqtop;
 
 static struct option longopts[] = {
    { "host",               required_argument,   NULL,    'h' },
@@ -44,12 +46,12 @@ static struct option longopts[] = {
    { NULL,                 0,                   NULL,     0 }
 };
 
-void usage(char **argv) {
+void usage(char* argv) {
    cout << title << endl;
    cout << "version " << VERSION << " " << copyright << "(" << contacts << ")" << endl;
    cout << endl;
    cout << "Usage:";
-   cout << "\n" << argv[0] << " [--host host] [--port port] [--pass password] [--hosts host1,host...] [--users user1,user2] [--brief] [--full] [--zero] [--detail] [--nocompactsameurls] [--once] [--help]";
+   cout << "\n" << argv << " [--host host] [--port port] [--pass password] [--hosts host1,host...] [--users user1,user2] [--brief] [--full] [--zero] [--detail] [--nocompactsameurls] [--once] [--help]";
    cout << "\n\t--host   (-h) host           - " << host_help << ". Default - '127.0.0.1';";
    cout << "\n\t--port   (-p) port           - " << port_help << ". Default - '3128';";
    cout << "\n\t--pass   (-P) password       - " << passwd_help << ";";
@@ -68,7 +70,7 @@ void usage(char **argv) {
    cout << endl;
 }
 
-options_c *options;
+sqtop::Options* pOpts;
 
 #ifdef ENABLE_UI
 pthread_t sq_thread;
@@ -82,22 +84,22 @@ bool DESC(int a, int b) {
    return a > b;
 }
 
-string conns_format(vector <SQUID_Connection> conns) {
+string conns_format(vector<SQUID_Connection> conns) {
    std::stringstream result;
 
-   if (!options->nocompactsameurls)
-      sqstat::compactSameUrls(conns);
+   if (!pOpts->nocompactsameurls)
+      sqstat::CompactSameUrls(conns);
 
    for (vector<SQUID_Connection>::iterator it = conns.begin(); it != conns.end(); ++it) {
-      if (((options->Hosts.size() == 0) || Utils::IPmemberOf(options->Hosts, it->peer)) &&
-         ((options->Users.size() == 0) || Utils::UserMemberOf(options->Users, it->usernames))) {
+      if (((pOpts->Hosts.size() == 0) || Utils::IPMemberOf(pOpts->Hosts, it->peer)) &&
+         ((pOpts->Users.size() == 0) || Utils::UserMemberOf(pOpts->Users, it->usernames))) {
 
-         result << sqstat::conn_format(options, *it);
+         result << sqstat::ConnFormat(pOpts, *it);
 
-         if (not options->brief) {
+         if (not pOpts->brief) {
             result << endl;
             for (vector<Uri_Stats>::iterator itu = it->stats.begin(); itu != it->stats.end(); ++itu) {
-               result << sqstat::stat_format(options, *it, *itu);
+               result << sqstat::StatFormat(pOpts, *it, *itu);
                result << endl;
             }
          }
@@ -109,28 +111,28 @@ string conns_format(vector <SQUID_Connection> conns) {
 
 #ifdef ENABLE_UI
 struct thread_args {
-   ncui *ui;
+   ncui* ui;
 };
 
 void squid_loop(void* threadarg) {
    sqstat sqs;
-   std::vector <SQUID_Connection> stat;
-   thread_args *args = reinterpret_cast<thread_args *>(threadarg);
+   std::vector<SQUID_Connection> stat;
+   thread_args* pArgs = reinterpret_cast<thread_args*>(threadarg);
    while (true) {
-      if (options->do_refresh) {
+      if (pOpts->do_refresh) {
          try {
-            stat = sqs.getinfo(options->host, options->port, options->pass);
-            args->ui->clearerror();
-            args->ui->set_speeds(sqs.av_speed, sqs.curr_speed);
-            args->ui->set_active_conn(sqs.active_conn);
-            args->ui->set_stat(stat);
+            stat = sqs.GetInfo(pOpts->host, pOpts->port, pOpts->pass);
+            pArgs->ui->ClearError();
+            pArgs->ui->SetSpeeds(sqs.av_speed, sqs.curr_speed);
+            pArgs->ui->SetActiveConnCount(sqs.active_conn);
+            pArgs->ui->SetStat(stat);
          }
          catch (sqstatException &e) {
-            args->ui->seterror(e.what());
+            pArgs->ui->SetError(e.what());
          }
-         args->ui->tick();
+         pArgs->ui->Tick();
       }
-      for (int i=0; i<options->sleep_sec; ++i) {
+      for (int i=0; i<pOpts->sleep_sec; ++i) {
          sleep(1);
       }
    }
@@ -141,32 +143,32 @@ int main(int argc, char **argv) {
    // TODO: config file ?
    int ch;
    string tempusers;
-   options = new options_c;
+   pOpts = new Options();
 
    while ((ch = getopt_long(argc, argv, "r:u:H:h:p:P:dzbfoc", longopts, NULL)) != -1) {
-      switch(ch) {
+      switch (ch) {
          case 'd':
-            options->detail = true;
+            pOpts->detail = true;
             break;
          case 'z':
-            options->zero = true;
+            pOpts->zero = true;
             break;
          case 'b':
-            options->brief = true;
+            pOpts->brief = true;
             break;
          case 'f':
-            options->detail = true;
-            options->full = true;
+            pOpts->detail = true;
+            pOpts->full = true;
             break;
          case 'P':
-            options->pass = optarg;
+            pOpts->pass = optarg;
             break;
          case 'h':
-            options->host = optarg;
+            pOpts->host = optarg;
             break;
          case 'p':
             try {
-               options->port = Utils::stol(optarg);
+               pOpts->port = Utils::stol(optarg);
             }
             catch(string &s) {
                cerr << "Unknown port - " << s << endl;
@@ -174,24 +176,24 @@ int main(int argc, char **argv) {
             }
             break;
          case 'H':
-            options->Hosts = Utils::splitString(optarg, ",");
+            pOpts->Hosts = Utils::SplitString(optarg, ",");
             break;
          case 'u':
             tempusers = optarg;
             Utils::ToLower(tempusers);
-            options->Users = Utils::splitString(tempusers, ",");
+            pOpts->Users = Utils::SplitString(tempusers, ",");
             break;
 #ifdef ENABLE_UI
          case 'o':
-            options->ui = false;
+            pOpts->ui = false;
             break;
          case 'r':
             try {
                long int sec = Utils::stol(optarg);
                if (sec > 0)
-                  options->sleep_sec = Utils::stol(optarg);
+                  pOpts->sleep_sec = Utils::stol(optarg);
                else
-                  cerr << "Refresh interval should be greater than 0, using default - " << options->sleep_sec << endl;
+                  cerr << "Refresh interval should be greater than 0, using default - " << pOpts->sleep_sec << endl;
             }
             catch(string &s) {
                cerr << "Wrong number - " << s << endl;
@@ -199,10 +201,10 @@ int main(int argc, char **argv) {
             }
 #endif
          case 'c':
-            options->nocompactsameurls = true;
+            pOpts->nocompactsameurls = true;
             break;
          default:
-            usage(argv);
+            usage(argv[0]);
             exit(0);
       }
    }
@@ -213,37 +215,38 @@ int main(int argc, char **argv) {
    //sigaction(SIGINT, &sa, NULL);
 
 #ifdef ENABLE_UI
-   if (options->ui) {
-      ncui ui = ncui(options);
-      ui.curses_init();
+   if (pOpts->ui) {
+      ncui *ui = new ncui(pOpts);
+      ui->CursesInit();
 
       thread_args args;
-      args.ui = &ui;
+      args.ui = ui;
 
       pthread_create(&sq_thread, NULL, (void *(*) (void *)) &squid_loop, (void *) &args);
 
-      ui.loop();
+      ui->Loop();
 
       pthread_cancel(sq_thread);
-      ui.finish();
+      ui->CursesFinish();
+      delete ui;
    } else {
 #endif
       sqstat sqs;
-      std::vector <SQUID_Connection> stat;
+      std::vector<SQUID_Connection> stat;
       try {
-         stat = sqs.getinfo(options->host, options->port, options->pass);
+         stat = sqs.GetInfo(pOpts->host, pOpts->port, pOpts->pass);
       }
       catch (sqstatException &e) {
          cerr << e.what() << endl;
          exit(1);
       }
-      cout << sqstat::head_format(options, sqs.active_conn, stat.size(), sqs.av_speed) << endl;
+      cout << sqstat::HeadFormat(pOpts, sqs.active_conn, stat.size(), sqs.av_speed) << endl;
       cout << conns_format(stat) << endl;
 #ifdef ENABLE_UI
    }
 #endif
 
-   delete options;
+   delete pOpts;
 
    return 0;
 }

@@ -5,7 +5,9 @@
 
 #include "options.hpp"
 
-options_c::options_c() {
+namespace sqtop {
+
+Options::Options() {
    host = "127.0.0.1";
    port = 3128;
    pass = "";
@@ -24,22 +26,23 @@ options_c::options_c() {
    sort_order = SORT_SIZE;
 }
 
-void options_c::copy(options_c *result) {
-   result->host = host;
-   result->port = port;
-   result->pass = pass;
-   result->brief = brief;
-   result->full = full;
-   result->zero = zero;
-   result->detail = detail;
-   result->ui = ui;
-   result->compactlongurls = compactlongurls;
-   result->nocompactsameurls = nocompactsameurls;
-   result->freeze = freeze;
-   result->sleep_sec = sleep_sec;
-   result->showhelp = showhelp;
-   result->speed_mode = speed_mode;
-   result->sort_order = sort_order;
+void Options::CopyFrom(Options* pOrig) {
+   host = pOrig->host;
+   port = pOrig->port;
+   pass = pOrig->pass;
+   brief = pOrig->brief;
+   full = pOrig->full;
+   zero = pOrig->zero;
+   detail = pOrig->detail;
+   ui = pOrig->ui;
+   compactlongurls = pOrig->compactlongurls;
+   nocompactsameurls = pOrig->nocompactsameurls;
+   freeze = pOrig->freeze;
+   sleep_sec = pOrig->sleep_sec;
+   showhelp = pOrig->showhelp;
+   speed_mode = pOrig->speed_mode;
+   sort_order = pOrig->sort_order;
 }
 
+}
 // vim: ai ts=3 sts=3 et sw=3 expandtab

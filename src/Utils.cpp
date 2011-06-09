@@ -21,8 +21,8 @@
 using std::string;
 using std::vector;
 
-vector <string> Utils::splitString(string str, string delim) {
-   vector <string> result;
+vector<string> Utils::SplitString(string str, string delim) {
+   vector<string> result;
    std::string::size_type found = str.find_first_of(delim);
    while (found != string::npos) {
       result.push_back(str.substr(0, found));
@@ -35,7 +35,7 @@ vector <string> Utils::splitString(string str, string delim) {
    return result;
 }
 
-string Utils::joinVector(vector<string> inv, string delim) {
+string Utils::JoinVector(vector<string> inv, string delim) {
    string result = "";
    for (vector<string>::iterator it = inv.begin(); it != inv.end(); ++it)
       result += (*it + delim);
@@ -72,7 +72,7 @@ string Utils::ftos(double num, int prec) {
     return (ss.str());
 }
 
-string Utils::usernames2str(vector<string> &in) {
+string Utils::UsernamesToStr(vector<string>& in) {
    string result = "";
    for (vector<string>::iterator it = in.begin(); it != in.end(); ++it)
         result += *it + ", ";
@@ -80,7 +80,7 @@ string Utils::usernames2str(vector<string> &in) {
    return result;
 }
 
-string Utils::convert_time(long etime) {
+string Utils::ConvertTime(long etime) {
     string result="";
     long hours   = etime/3600;
     long minutes = (etime/60) % 60;
@@ -99,7 +99,7 @@ string Utils::convert_time(long etime) {
     return result;
 }
 
-string Utils::convert_size(long long esize) {
+string Utils::ConvertSize(long long esize) {
     string result="";
     long long gb = esize/1024/1024/1024;
     long long mb = esize/1024/1024 - gb*1024;
@@ -114,7 +114,7 @@ string Utils::convert_size(long long esize) {
     return result;
 }
 
-std::pair <string, string> Utils::convert_speed_pair(long long speed) {
+std::pair <string, string> Utils::ConvertSpeedPair(long long speed) {
    std::pair <string, string> result;
    long long mb = speed/1024/1024;
    //long kb = speed/1024;
@@ -128,25 +128,25 @@ std::pair <string, string> Utils::convert_speed_pair(long long speed) {
    return result;
 }
 
-string Utils::convert_speed(long long speed) {
-   std::pair <string, string> result = Utils::convert_speed_pair(speed);
+string Utils::ConvertSpeed(long long speed) {
+   std::pair <string, string> result = Utils::ConvertSpeedPair(speed);
    return result.first+result.second;
 }
 
-bool Utils::VectorFindSubstr(vector <string> &v, string &str) {
+bool Utils::VectorFindSubstr(vector<string>& v, string& str) {
    for(vector<string>::iterator it = v.begin(); it != v.end(); ++it) {
       if ((*it).find(str) != string::npos) return true;
    }
    return false;
 }
 
-bool Utils::memberOf(vector <string> &v, string &str) {
+bool Utils::MemberOf(vector<string>& v, string& str) {
      if (find(v.begin(), v.end(), str) == v.end())
         return false;
      else return true;
 }
 
-void Utils::VectorDeleteStr(vector<string> &v, string &str)
+void Utils::VectorDeleteStr(vector<string>& v, string& str)
 {
    vector<string>::iterator vItr = v.begin();
    while ( vItr != v.end() ) {
@@ -159,9 +159,9 @@ void Utils::VectorDeleteStr(vector<string> &v, string &str)
    }
 }
 
-bool Utils::IPmemberOf(vector <string> &v, string &ip_in) {
+bool Utils::IPMemberOf(vector<string>& v, string& ip_in) {
      for (vector<string>::iterator it = v.begin(); it != v.end(); ++it) {
-        vector <string> ip_mask = splitString(*it, "/");
+        vector<string> ip_mask = SplitString(*it, "/");
         unsigned long int ip = inet_addr(ip_mask[0].c_str());
         unsigned long int mask;
         if (ip_mask.size() > 1) {
@@ -182,13 +182,13 @@ bool Utils::IPmemberOf(vector <string> &v, string &ip_in) {
     return false;
 }
 
-void Utils::ToLower(string &data) {
-     transform(data.begin(), data.end(), data.begin(), ::tolower);
+void Utils::ToLower(string& rData) {
+     transform(rData.begin(), rData.end(), rData.begin(), ::tolower);
 }
 
-bool Utils::UserMemberOf(vector <string> &v, vector <string> &users) {
+bool Utils::UserMemberOf(vector<string>& v, vector<string>& users) {
      for (vector<string>::iterator it = users.begin(); it != users.end(); ++it) {
-         if (memberOf(v, *it))
+         if (MemberOf(v, *it))
             return true;
      }
      return false;

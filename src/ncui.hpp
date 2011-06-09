@@ -13,6 +13,8 @@
 #include "options.hpp"
 #include "sqstat.hpp"
 
+namespace sqtop {
+
 struct formattedline_t {
    // text representation of sconn or url
    std::string str;
@@ -32,76 +34,81 @@ struct formattedline_t {
 
 class ncui {
    public:
-      ncui();
+      //ncui();
       ~ncui();
-      ncui(options_c *gopts);
-      void curses_init(void);
-      void print(void);
-      void loop(void);
-      void finish(void);
-      void tick(void);
+      ncui(Options* pgOpts);
 
-      bool dontshowdisplay;
+      void CursesInit(void);
+      void CursesFinish(void);
 
-      void seterror(std::string);
-      void clearerror();
+      void Print(void);
+      void Loop(void);
+      void Tick(void);
 
-      void set_speeds(long av_speed, long curr_speed);
-      void set_active_conn(int);
-      void set_stat(std::vector <SQUID_Connection>);
+      void SetError(std::string);
+      void ClearError();
+
+      void SetSpeeds(long av_speed, long curr_speed);
+      void SetActiveConnCount(int);
+      void SetStat(std::vector<SQUID_Connection>);
+
    private:
-      int compactlongline(std::string &line);
+      int CompactLongLine(std::string &line);
 
-      std::string edline(int linenum, std::string prompt, std::string initial);
+      std::string EdLine(int linenum, std::string prompt, std::string initial);
       int min(const int a, const int b);
 
-      void showhelphint(std::string text);
+      void ShowHelpHint(std::string text);
       int helphint_time;
 
-      std::string helpmsg();
+      std::string helpmsg(void);
 
       std::string b2s(bool);
 
       std::string error;
 
       unsigned int selected_index;
-      formattedline_t selected_t;
-      void toggle_action();
+      void ToggleAction();
+
+      formattedline_t MakeResult(std::string str, int y, int coef, SQUID_Connection sconn, std::string id);
+      formattedline_t MakeNewLine(int y);
 
       unsigned int page_size;
 
-      //unsigned int ticks;
-
-      std::vector <std::string> collapsed;
-      std::vector <std::string> detailed;
+      std::vector<std::string> collapsed;
+      std::vector<std::string> detailed;
 
       std::string search_string;
 
       std::string debug;
-      void addwatch(std::string prefix, std::string value);
+      void AddWatch(std::string prefix, std::string value);
 
       long av_speed;
       long curr_speed;
       int act_conn;
-      std::vector <SQUID_Connection> sqconns;
+      std::vector<SQUID_Connection> sqconns;
 
       std::string helphintmsg;
       time_t helptimer;
       sig_atomic_t foad;
-      options_c *global_opts;
+      Options* pGlobalOpts;
 
       pthread_mutex_t tick_mutex;
       pthread_mutexattr_t mattr;
 
-      std::vector <formattedline_t> format_connections_str(std::vector<SQUID_Connection> conns, int offset);
-      std::vector<SQUID_Connection> filter_conns(std::vector<SQUID_Connection> in);
+      formattedline_t selected_t;
+
+      std::vector<formattedline_t> FormatConnections(std::vector<SQUID_Connection> conns, int offset);
+      static bool Filter(SQUID_Connection scon, Options* pOpts);
+      std::vector<SQUID_Connection> FilterConns(std::vector<SQUID_Connection> in);
       int increment;
       unsigned int y_coef;
       unsigned int start;
 
-      options_c *opts;
+      Options* pOpts;
 };
 
+}
 #endif /* __NCUI_H */
 
 // vim: ai ts=3 sts=3 et sw=3 expandtab

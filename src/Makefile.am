@@ -1,5 +1,5 @@
 bin_PROGRAMS = sqtop
-sqtop_SOURCES = Base64.cpp Utils.cpp sqconn.cpp sqstat.cpp options.cpp
+sqtop_SOURCES = Base64.cpp Utils.cpp options.cpp sqconn.cpp sqstat.cpp
 sqtop_LDADD = @LIBOBJS@
 
 AM_CPPFLAGS = -Wall

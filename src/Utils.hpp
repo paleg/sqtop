@@ -10,22 +10,22 @@
 #include <vector>
 
 namespace Utils {
-   extern std::vector <std::string>  splitString(std::string str, std::string delim);
-   extern std::string joinVector(std::vector<std::string> inv, std::string delim);
+   extern std::vector<std::string> SplitString(std::string str, std::string delim);
+   extern std::string JoinVector(std::vector<std::string> inv, std::string delim);
    extern std::string itos(long long num);
    extern long int stol(std::string s);
    extern std::string ftos(double num, int prec);
-   extern std::string usernames2str(std::vector<std::string> &in);
-   extern std::string convert_time(long etime);
-   extern std::string convert_size(long long esize);
-   extern std::pair <std::string, std::string> convert_speed_pair(long long speed);
-   extern std::string convert_speed(long long speed);
-   extern bool memberOf(std::vector <std::string> &v, std::string &str);
-   extern void VectorDeleteStr(std::vector <std::string> &v, std::string &str);
-   extern bool VectorFindSubstr(std::vector <std::string> &v, std::string &str);
-   extern bool IPmemberOf(std::vector <std::string> &v, std::string &ip_in);
-   extern void ToLower(std::string &data);
-   extern bool UserMemberOf(std::vector <std::string> &v, std::vector <std::string> &users);
+   extern std::string UsernamesToStr(std::vector<std::string>& in);
+   extern std::string ConvertTime(long etime);
+   extern std::string ConvertSize(long long esize);
+   extern std::pair <std::string, std::string> ConvertSpeedPair(long long speed);
+   extern std::string ConvertSpeed(long long speed);
+   extern bool MemberOf(std::vector<std::string>& v, std::string& str);
+   extern void VectorDeleteStr(std::vector<std::string>& v, std::string& str);
+   extern bool VectorFindSubstr(std::vector<std::string>& v, std::string& str);
+   extern bool IPMemberOf(std::vector<std::string>& v, std::string& ip_in);
+   extern void ToLower(std::string& rData);
+   extern bool UserMemberOf(std::vector<std::string>& v, std::vector<std::string>& users);
 };
 
 #endif /* __UTILS_H */

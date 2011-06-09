@@ -12,12 +12,15 @@
 //exception
 #include <typeinfo>
 
+namespace sqtop {
+
 class sqconnException: public std::exception {
     public:
        sqconnException(const std::string &message) throw() : userMessage(message) {}
        ~sqconnException() throw() {}
 
        const char *what() const throw() { return userMessage.c_str(); }
+
     private:
        std::string userMessage;
 };
@@ -29,10 +32,12 @@ class sqconn {
 
        void open(std::string, int);
        int operator << (const std::string);
-       int operator >> (std::string &);
+       int operator >> (std::string&);
+
     private:
        int m_sock;
        struct sockaddr_in m_addr;
 };
 
+}
 #endif /* __SQCONN_H */

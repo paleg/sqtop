@@ -13,6 +13,8 @@
 
 #include "options.hpp"
 
+namespace sqtop {
+
 struct Uri_Stats {
    std::string id;
    int count;
@@ -33,8 +35,8 @@ struct SQUID_Connection {
    long max_etime;
    long av_speed;
    long curr_speed;
-   std::vector <Uri_Stats> stats;
-   std::vector <std::string> usernames;
+   std::vector<Uri_Stats> stats;
+   std::vector<std::string> usernames;
    SQUID_Connection() : sum_size(0), max_etime(0), av_speed(0), curr_speed(0) {};
 };
 
@@ -52,7 +54,8 @@ class sqstatException: public std::exception {
       }
       ~sqstatException() throw() {}
 
-      const char *what() const throw() { return userMessage.c_str(); }
+      const char* what() const throw() { return userMessage.c_str(); }
+
     private:
       std::string userMessage;
       int code;
@@ -61,19 +64,23 @@ class sqstatException: public std::exception {
 class sqstat {
    public:
       sqstat();
-      std::vector <SQUID_Connection> getinfo(std::string host, int port, std::string passwd);
+      std::vector<SQUID_Connection> GetInfo(std::string host, int port, std::string passwd);
 
       std::string squid_version;
       int active_conn;
       long av_speed;
       long curr_speed;
 
-      static void compactSameUrls(std::vector <SQUID_Connection> &scon);
+      static bool CompareURLs(Uri_Stats a, Uri_Stats b);
+      static bool CompareIP(SQUID_Connection a, SQUID_Connection b);
+      static bool ConnByPeer(SQUID_Connection conn, std::string Host);
+      static bool StatByID(Uri_Stats stat, std::string id);
+      static void CompactSameUrls(std::vector<SQUID_Connection>& scon);
 
-      static std::string head_format(options_c *opts, int active_conn, int active_ips, long av_speed);
-      static std::string conn_format(options_c *opts, SQUID_Connection &scon);
-      static std::string stat_format(options_c *opts, SQUID_Connection &scon, Uri_Stats &ustat);
-      static std::string speeds_format(SPEED_MODE mode, long int av_speed, long int curr_speed);
+      static std::string HeadFormat(Options* pOpts, int active_conn, int active_ips, long av_speed);
+      static std::string ConnFormat(Options* pOpts, SQUID_Connection& scon);
+      static std::string StatFormat(Options* pOpts, SQUID_Connection& scon, Uri_Stats& ustat);
+      static std::string SpeedsFormat(Options::SPEED_MODE mode, long int av_speed, long int curr_speed);
 
       static bool CompareSIZE(SQUID_Connection a, SQUID_Connection b);
       static bool CompareTIME(SQUID_Connection a, SQUID_Connection b);
@@ -81,17 +88,18 @@ class sqstat {
       static bool CompareCURRSPEED(SQUID_Connection a, SQUID_Connection b);
 
    private:
-      std::vector <SQUID_Connection> Connections;
-      std::vector <SQUID_Connection> OldConnections;
+      std::vector<SQUID_Connection> connections;
+      std::vector<SQUID_Connection> oldConnections;
 
       time_t lastruntime;
 
-      void format_changed(std::string line);
-      std::vector<SQUID_Connection>::iterator findConnByPeer(std::string Host);
-      std::vector<Uri_Stats>::iterator findStatById(std::vector<SQUID_Connection>::iterator conn, std::string id);
-      Uri_Stats findUriStatsById(std::vector <SQUID_Connection> conns, std::string id);
+      void FormatChanged(std::string line);
+      //std::vector<SQUID_Connection>::iterator FindConnByPeer(std::string Host);
+      //std::vector<Uri_Stats>::iterator FindStatById(std::vector<SQUID_Connection>::iterator conn, std::string id);
+      Uri_Stats FindUriStatsById(std::vector<SQUID_Connection> conns, std::string id);
 };
 
+}
 #endif /* __SQSTAT_H */
 
 // vim: ai ts=3 sts=3 et sw=3 expandtab
