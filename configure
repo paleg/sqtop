@@ -606,6 +606,8 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+WITH_RESOLVER_FALSE
+WITH_RESOLVER_TRUE
 EGREP
 GREP
 CXXCPP
@@ -627,6 +629,14 @@ CXXFLAGS
 CXX
 ENABLE_UI_FALSE
 ENABLE_UI_TRUE
+host_os
+host_vendor
+host_cpu
+host
+build_os
+build_vendor
+build_cpu
+build
 am__untar
 am__tar
 AMTAR
@@ -692,6 +702,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 enable_ui
+with_resolver
 enable_dependency_tracking
 '
       ac_precious_vars='build_alias
@@ -1307,6 +1318,10 @@ Program names:
   --program-prefix=PREFIX            prepend PREFIX to installed program names
   --program-suffix=SUFFIX            append SUFFIX to installed program names
   --program-transform-name=PROGRAM   run sed PROGRAM on installed program names
+
+System types:
+  --build=BUILD     configure for building on BUILD [guessed]
+  --host=HOST       cross-compile to build programs to run on HOST [BUILD]
 _ACEOF
 fi
 
@@ -1320,9 +1335,18 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
-  --enable-ui\t\tBuild with ncurses user interface
+  --enable-ui     build with ncurses user interface
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
+
+Optional Packages:
+  --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
+  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-resolver=TYPE     technique sqtop should use for name resolution.
+       netdb               use gethostbyaddr_r in multiple threads
+       netdb_getnameinfo   use getnameinfo (guess single or multiple threads)
+       netdb_gethostbyaddr use gethostbyaddr in single thread
+       guess               try to guess reasonable value (default).
 
 Some influential environment variables:
   CXX         C++ compiler command
@@ -2631,6 +2655,78 @@ am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
 
 
 
+# Make sure we can run config.sub.
+$SHELL "$ac_aux_dir/config.sub" sun4 >/dev/null 2>&1 ||
+  as_fn_error $? "cannot run $SHELL $ac_aux_dir/config.sub" "$LINENO" 5
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking build system type" >&5
+$as_echo_n "checking build system type... " >&6; }
+if ${ac_cv_build+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_build_alias=$build_alias
+test "x$ac_build_alias" = x &&
+  ac_build_alias=`$SHELL "$ac_aux_dir/config.guess"`
+test "x$ac_build_alias" = x &&
+  as_fn_error $? "cannot guess build type; you must specify one" "$LINENO" 5
+ac_cv_build=`$SHELL "$ac_aux_dir/config.sub" $ac_build_alias` ||
+  as_fn_error $? "$SHELL $ac_aux_dir/config.sub $ac_build_alias failed" "$LINENO" 5
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_build" >&5
+$as_echo "$ac_cv_build" >&6; }
+case $ac_cv_build in
+*-*-*) ;;
+*) as_fn_error $? "invalid value of canonical build" "$LINENO" 5;;
+esac
+build=$ac_cv_build
+ac_save_IFS=$IFS; IFS='-'
+set x $ac_cv_build
+shift
+build_cpu=$1
+build_vendor=$2
+shift; shift
+# Remember, the first character of IFS is used to create $*,
+# except with old shells:
+build_os=$*
+IFS=$ac_save_IFS
+case $build_os in *\ *) build_os=`echo "$build_os" | sed 's/ /-/g'`;; esac
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking host system type" >&5
+$as_echo_n "checking host system type... " >&6; }
+if ${ac_cv_host+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test "x$host_alias" = x; then
+  ac_cv_host=$ac_cv_build
+else
+  ac_cv_host=`$SHELL "$ac_aux_dir/config.sub" $host_alias` ||
+    as_fn_error $? "$SHELL $ac_aux_dir/config.sub $host_alias failed" "$LINENO" 5
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_host" >&5
+$as_echo "$ac_cv_host" >&6; }
+case $ac_cv_host in
+*-*-*) ;;
+*) as_fn_error $? "invalid value of canonical host" "$LINENO" 5;;
+esac
+host=$ac_cv_host
+ac_save_IFS=$IFS; IFS='-'
+set x $ac_cv_host
+shift
+host_cpu=$1
+host_vendor=$2
+shift; shift
+# Remember, the first character of IFS is used to create $*,
+# except with old shells:
+host_os=$*
+IFS=$ac_save_IFS
+case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
+
+
+
 # Check whether --enable-ui was given.
 if test "${enable_ui+set}" = set; then :
   enableval=$enable_ui; case "${enableval}" in
@@ -2650,6 +2746,19 @@ else
   ENABLE_UI_FALSE=
 fi
 
+
+
+# Check whether --with-resolver was given.
+if test "${with_resolver+set}" = set; then :
+  withval=$with_resolver; resolver=$withval
+else
+  resolver=guess
+fi
+
+
+if test x$resolver = xyes; then
+   resolver=guess
+fi
 
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -3951,6 +4060,260 @@ done
 
 fi
 
+if test x$resolver != xno; then
+   specified_resolver=$resolver
+   if test x$resolver = xguess; then
+      resolver=netdb
+   fi
+
+   if test x$resolver = xnetdb ; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing gethostbyaddr_r" >&5
+$as_echo_n "checking for library containing gethostbyaddr_r... " >&6; }
+if ${ac_cv_search_gethostbyaddr_r+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char gethostbyaddr_r ();
+int
+main ()
+{
+return gethostbyaddr_r ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' nsl; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_search_gethostbyaddr_r=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_gethostbyaddr_r+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_gethostbyaddr_r+:} false; then :
+
+else
+  ac_cv_search_gethostbyaddr_r=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_gethostbyaddr_r" >&5
+$as_echo "$ac_cv_search_gethostbyaddr_r" >&6; }
+ac_res=$ac_cv_search_gethostbyaddr_r
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+else
+  resolver=guess
+fi
+
+      if test x$resolver = xguess && test x$specified_resolver != xguess ; then
+                  as_fn_error $? "no library defines gethostbyaddr_r" "$LINENO" 5
+      fi
+   fi
+
+   if test x$resolver = xnetdb ; then
+
+$as_echo "#define USE_GETHOSTBYADDR_R 1" >>confdefs.h
+
+   fi
+
+   if test x$resolver = xguess ; then
+      resolver=netdb_getnameinfo
+   fi
+
+   if test x$resolver = xnetdb_getnameinfo ; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing getnameinfo" >&5
+$as_echo_n "checking for library containing getnameinfo... " >&6; }
+if ${ac_cv_search_getnameinfo+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char getnameinfo ();
+int
+main ()
+{
+return getnameinfo ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' nsl; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_search_getnameinfo=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_getnameinfo+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_getnameinfo+:} false; then :
+
+else
+  ac_cv_search_getnameinfo=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_getnameinfo" >&5
+$as_echo "$ac_cv_search_getnameinfo" >&6; }
+ac_res=$ac_cv_search_getnameinfo
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+else
+  resolver=guess
+fi
+
+      if test x$resolver = xguess && test x$specified_resolver != xguess ; then
+                  as_fn_error $? "no library defines getnameinfo" "$LINENO" 5
+      fi
+   fi
+
+   if test x$resolver = xnetdb_getnameinfo ; then
+
+$as_echo "#define USE_GETNAMEINFO 1" >>confdefs.h
+
+
+      case "$host_os" in
+         darwin10.[0-4]*) threadsafe_getnameinfo=0 ;;
+         darwin10.*) threadsafe_getnameinfo=1 ;;
+         linux*) threadsafe_getnameinfo=1 ;;
+         *) threadsafe_getnameinfo=0 ;;
+      esac
+      if test $threadsafe_getnameinfo = 1; then
+
+$as_echo "#define THREADSAFE_GETNAMEINFO 1" >>confdefs.h
+
+      fi
+   fi
+
+   if test x$resolver = xguess ; then
+      resolver=netdb_gethostbyaddr
+   fi
+
+   if test x$resolver = xnetdb_gethostbyaddr; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing gethostbyaddr" >&5
+$as_echo_n "checking for library containing gethostbyaddr... " >&6; }
+if ${ac_cv_search_gethostbyaddr+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char gethostbyaddr ();
+int
+main ()
+{
+return gethostbyaddr ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' nsl; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_search_gethostbyaddr=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_gethostbyaddr+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_gethostbyaddr+:} false; then :
+
+else
+  ac_cv_search_gethostbyaddr=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_gethostbyaddr" >&5
+$as_echo "$ac_cv_search_gethostbyaddr" >&6; }
+ac_res=$ac_cv_search_gethostbyaddr
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+else
+  resolver=guess
+fi
+
+      if test x$resolver = xguess && test x$specified_resolver != xguess ; then
+                  as_fn_error $? "no library defines gethostbyaddr" "$LINENO" 5
+      fi
+   fi
+
+   if test x$resolver = xnetdb_gethostbyaddr; then
+
+$as_echo "#define USE_GETHOSTBYADDR 1" >>confdefs.h
+
+   fi
+
+   if test x$resolver = xguess; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: failed to find reasonable resolver, name resolution will not be available!!!" >&5
+$as_echo "$as_me: failed to find reasonable resolver, name resolution will not be available!!!" >&6;}
+   else
+
+$as_echo "#define WITH_RESOLVER 1" >>confdefs.h
+
+   fi
+fi
+ if test x$resover != xno; then
+  WITH_RESOLVER_TRUE=
+  WITH_RESOLVER_FALSE='#'
+else
+  WITH_RESOLVER_TRUE='#'
+  WITH_RESOLVER_FALSE=
+fi
+
+
 ac_config_files="$ac_config_files Makefile src/Makefile doc/Makefile"
 
 cat >confcache <<\_ACEOF
@@ -4080,6 +4443,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCXX_TRUE}" && test -z "${am__fastdepCXX_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCXX\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${WITH_RESOLVER_TRUE}" && test -z "${WITH_RESOLVER_FALSE}"; then
+  as_fn_error $? "conditional \"WITH_RESOLVER\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

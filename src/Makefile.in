@@ -32,9 +32,12 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+build_triplet = @build@
+host_triplet = @host@
 bin_PROGRAMS = sqtop$(EXEEXT)
 @ENABLE_UI_TRUE@am__append_1 = ncui.cpp
 @ENABLE_UI_TRUE@am__append_2 = -DENABLE_UI
+@WITH_RESOLVER_TRUE@am__append_3 = resolver.cpp
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/config.h.in
@@ -49,11 +52,12 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__sqtop_SOURCES_DIST = Base64.cpp Utils.cpp options.cpp sqconn.cpp \
-	sqstat.cpp ncui.cpp sqtop.cpp
+	sqstat.cpp ncui.cpp resolver.cpp sqtop.cpp
 @ENABLE_UI_TRUE@am__objects_1 = ncui.$(OBJEXT)
+@WITH_RESOLVER_TRUE@am__objects_2 = resolver.$(OBJEXT)
 am_sqtop_OBJECTS = Base64.$(OBJEXT) Utils.$(OBJEXT) options.$(OBJEXT) \
 	sqconn.$(OBJEXT) sqstat.$(OBJEXT) $(am__objects_1) \
-	sqtop.$(OBJEXT)
+	$(am__objects_2) sqtop.$(OBJEXT)
 sqtop_OBJECTS = $(am_sqtop_OBJECTS)
 sqtop_DEPENDENCIES = @LIBOBJS@
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -125,14 +129,22 @@ am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
 bindir = @bindir@
+build = @build@
 build_alias = @build_alias@
+build_cpu = @build_cpu@
+build_os = @build_os@
+build_vendor = @build_vendor@
 builddir = @builddir@
 datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
+host = @host@
 host_alias = @host_alias@
+host_cpu = @host_cpu@
+host_os = @host_os@
+host_vendor = @host_vendor@
 htmldir = @htmldir@
 includedir = @includedir@
 infodir = @infodir@
@@ -157,7 +169,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 sqtop_SOURCES = Base64.cpp Utils.cpp options.cpp sqconn.cpp sqstat.cpp \
-	$(am__append_1) sqtop.cpp
+	$(am__append_1) $(am__append_3) sqtop.cpp
 sqtop_LDADD = @LIBOBJS@
 AM_CPPFLAGS = -Wall $(am__append_2)
 all: config.h
@@ -263,6 +275,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ncui.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/options.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/resolver.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sqconn.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sqstat.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sqtop.Po@am__quote@
@@ -479,6 +492,7 @@ uninstall-am: uninstall-binPROGRAMS
 	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
 	tags uninstall uninstall-am uninstall-binPROGRAMS
 
+@ENABLE_UI_TRUE@   #TODO: move this to config.h
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
