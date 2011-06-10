@@ -68,6 +68,10 @@ ncui::ncui(Options* pgOpts) {
    //ticks = 0;
    pOpts = new Options();
    pOpts->CopyFrom(pGlobalOpts);
+#ifdef WITH_RESOLVER
+   pOpts->pResolver->resolve_mode = Resolver::RESOLVE_ASYNC;
+   pOpts->pResolver->Start(MAX_THREADS);
+#endif
 }
 
 ncui::~ncui() {
@@ -181,6 +185,12 @@ string ncui::helpmsg() {
    ss << " P - " << passwd_help << pass << endl;
    ss << " r - " << refresh_interval_help << " (" << Utils::itos(pGlobalOpts->sleep_sec) << ")" << endl;
    ss << endl;
+#ifdef WITH_RESOLVER
+   ss << "Resolver (working in " << pOpts->pResolver->ResolveMode() << " mode with " 
+                                 << pOpts->pResolver->ResolveFunc() << " in " 
+                                 << pOpts->pResolver->MaxThreads() << " threads):" << endl;
+   ss << endl;
+#endif
    ss << "General:" << endl;
    ss << " / - search for substring in IPs, usernames and urls" << endl;
    ss << " ? - this help" << endl;
@@ -473,7 +483,7 @@ void ncui::Print() {
       string speed = sqstat::SpeedsFormat(pGlobalOpts->speed_mode, av_speed, curr_speed);
       speed[0] = toupper(speed[0]);
       status << speed << "\t\t";
-      status << "Active IPs: " << sqconns.size() << "\t\t";
+      status << "Active hosts: " << sqconns.size() << "\t\t";
       status << "Active connections: " << act_conn << "\t\t";
 
       mvhline(max_y-1, 0, 0, COLS);

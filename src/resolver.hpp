@@ -1,3 +1,8 @@
+/*
+ * (C) 2011 Oleg V. Palij <o.palij@gmail.com>
+ * Released under the GNU GPL, see the COPYING file in the source distribution for its full text.
+ */
+
 #ifndef __RESOLVER_H
 #define __RESOLVER_H
 

@@ -113,7 +113,15 @@ sqstat::sqstat() {
 /* static */ string sqstat::ConnFormat(Options* pOpts, SQUID_Connection& scon) {
    std::stringstream result;
 
-   result << "  IP: " << scon.peer;
+   result << "  Host: ";
+#ifdef WITH_RESOLVER
+   // TODO: strip domain port
+   // TODO: disable resolving
+   // TODO: show both ip and hostname
+   result << pOpts->pResolver->Resolve(scon.peer);
+#else
+   result << scon.peer;
+#endif
    if (!scon.usernames.empty()) {
       string head;
       if (scon.usernames.size() == 1)

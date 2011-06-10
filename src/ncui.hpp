@@ -10,6 +10,8 @@
 #include <vector>
 #include <csignal>
 
+#include "config.h"
+
 #include "options.hpp"
 #include "sqstat.hpp"
 

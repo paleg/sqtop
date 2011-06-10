@@ -11,6 +11,8 @@
 //exception
 #include <typeinfo>
 
+#include "config.h"
+
 #include "options.hpp"
 
 namespace sqtop {

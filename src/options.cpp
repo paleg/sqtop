@@ -24,6 +24,15 @@ Options::Options() {
    showhelp = false;
    speed_mode = SPEED_MIXED;
    sort_order = SORT_SIZE;
+#ifdef WITH_RESOLVER
+   pResolver = new Resolver();
+#endif
+}
+
+Options::~Options() {
+#ifdef WITH_RESOLVER
+   delete pResolver;
+#endif
 }
 
 void Options::CopyFrom(Options* pOrig) {

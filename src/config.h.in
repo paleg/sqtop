@@ -198,5 +198,20 @@
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
+/* resolving via getnameinfo can be done in multiple threads */
+#undef THREADSAFE_GETNAMEINFO
+
+/* use gethostbyaddr for name resolution */
+#undef USE_GETHOSTBYADDR
+
+/* use gethostbyaddr_r for name resolution */
+#undef USE_GETHOSTBYADDR_R
+
+/* use getnameinfo for name resolution */
+#undef USE_GETNAMEINFO
+
 /* Version number of package */
 #undef VERSION
+
+/* use name resolution */
+#undef WITH_RESOLVER

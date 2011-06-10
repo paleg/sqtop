@@ -15,6 +15,8 @@
 //stringstream
 #include <sstream>
 
+#include "config.h"
+
 #include "strings.hpp"
 #include "Utils.hpp"
 #include "ncui.hpp"
@@ -218,7 +220,6 @@ int main(int argc, char **argv) {
    if (pOpts->ui) {
       ncui *ui = new ncui(pOpts);
       ui->CursesInit();
-
       thread_args args;
       args.ui = ui;
 
@@ -241,6 +242,9 @@ int main(int argc, char **argv) {
          exit(1);
       }
       cout << sqstat::HeadFormat(pOpts, sqs.active_conn, stat.size(), sqs.av_speed) << endl;
+#ifdef WITH_RESOLVER
+      pOpts->pResolver->resolve_mode = Resolver::RESOLVE_SYNC;
+#endif
       cout << conns_format(stat) << endl;
 #ifdef ENABLE_UI
    }

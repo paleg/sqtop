@@ -9,11 +9,18 @@
 #include <string>
 #include <vector>
 
+#include "config.h"
+
+#ifdef WITH_RESOLVER
+#include <resolver.hpp>
+#endif
+
 namespace sqtop {
 
 class Options {
    public:
       Options();
+      ~Options();
 
       void CopyFrom(Options* pOrig);
 
@@ -49,6 +56,9 @@ class Options {
       };
       SPEED_MODE speed_mode;
       SORT_ORDER sort_order;
+#ifdef WITH_RESOLVER
+      Resolver* pResolver;
+#endif
 };
 
 }
