@@ -102,9 +102,8 @@ string Resolver::ResolveMode() {
 }
 
 /* static */ void Resolver::StripDomain(string& rName) {
-   if (IsIP(rName)) {
-      size_t found;
-      found=rName.find_first_of(".");
+   if (!IsIP(rName)) {
+      size_t found = rName.find_first_of(".");
       if (found != string::npos) {
          rName.erase(rName.begin()+found, rName.end());
       }
@@ -226,44 +225,44 @@ string Resolver::ResolveSync(string ip) {
 }
 #elif defined(USE_GETHOSTBYADDR)
 /* static */ string Resolver::DoRealResolve(struct in_addr* addr) {
-    struct hostent* he;
-    he = gethostbyaddr((const void*)addr, sizeof addr, AF_INET);
-    if (he) {
-       return he->h_name;
-    } else {
-       throw h_errno;
-    }
+   struct hostent* he;
+   he = gethostbyaddr((const void*)addr, sizeof addr, AF_INET);
+   if (he) {
+      return he->h_name;
+   } else {
+      throw h_errno;
+   }
 }
 #elif defined(USE_GETHOSTBYADDR_R)
 /* static */ string Resolver::DoRealResolve(struct in_addr* addr) {
-    struct hostent hostbuf;
-    struct hostent* hp;
-    size_t hstbuflen = 1024;
-    char* tmphstbuf;
-    int res;
-    int herr;
-    bool error;
+   struct hostent hostbuf;
+   struct hostent* hp;
+   size_t hstbuflen = 1024;
+   char* tmphstbuf;
+   int res;
+   int herr;
+   bool error;
 
-    tmphstbuf = (char*) malloc(hstbuflen);
-    if (!tmphstbuf) abort();
-    while ((res = gethostbyaddr_r((const void*)addr, sizeof addr, AF_INET,
-                                  &hostbuf, tmphstbuf, hstbuflen,
-                                  &hp, &herr)) == ERANGE) {
-        /* Enlarge the buffer.  */
-        hstbuflen *= 2;
-        tmphstbuf = (char*) realloc(tmphstbuf, hstbuflen);
-    }
+   tmphstbuf = (char*) malloc(hstbuflen);
+   if (!tmphstbuf) abort();
+   while ((res = gethostbyaddr_r((const void*)addr, sizeof addr, AF_INET,
+                                 &hostbuf, tmphstbuf, hstbuflen,
+                                 &hp, &herr)) == ERANGE) {
+       /* Enlarge the buffer.  */
+       hstbuflen *= 2;
+       tmphstbuf = (char*) realloc(tmphstbuf, hstbuflen);
+   }
 
-    error = ((res != 0) || (hp == NULL));
-    string result;
-    if (not error) {
-       result = hp->h_name;
-    }
-    free(tmphstbuf);
-    if (error) {
-       throw herr;
-    }
-    return result;
+   error = ((res != 0) || (hp == NULL));
+   string result;
+   if (not error) {
+      result = hp->h_name;
+   }
+   free(tmphstbuf);
+   if (error) {
+      throw herr;
+   }
+   return result;
 }
 #else
 /* static */ string Resolver::DoRealResolve(struct in_addr* addr) {
