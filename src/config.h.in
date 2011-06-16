@@ -1,5 +1,8 @@
 /* src/config.h.in.  Generated from configure.in by autoheader.  */
 
+/* build with ncurses user interface */
+#undef ENABLE_UI
+
 /* Define to 1 if you have the `addnstr' function. */
 #undef HAVE_ADDNSTR
 

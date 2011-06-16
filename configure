@@ -2738,6 +2738,11 @@ else
   enable_ui=true
 fi
 
+if test x$enable_ui = xtrue; then
+
+$as_echo "#define ENABLE_UI 1" >>confdefs.h
+
+fi
  if test x$enable_ui = xtrue; then
   ENABLE_UI_TRUE=
   ENABLE_UI_FALSE='#'

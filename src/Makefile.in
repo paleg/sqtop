@@ -36,8 +36,7 @@ build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = sqtop$(EXEEXT)
 @ENABLE_UI_TRUE@am__append_1 = ncui.cpp
-@ENABLE_UI_TRUE@am__append_2 = -DENABLE_UI
-@WITH_RESOLVER_TRUE@am__append_3 = resolver.cpp
+@WITH_RESOLVER_TRUE@am__append_2 = resolver.cpp
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/config.h.in
@@ -169,9 +168,9 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 sqtop_SOURCES = Base64.cpp Utils.cpp options.cpp sqconn.cpp sqstat.cpp \
-	$(am__append_1) $(am__append_3) sqtop.cpp
+	$(am__append_1) $(am__append_2) sqtop.cpp
 sqtop_LDADD = @LIBOBJS@
-AM_CPPFLAGS = -Wall $(am__append_2)
+AM_CPPFLAGS = -Wall
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -492,7 +491,6 @@ uninstall-am: uninstall-binPROGRAMS
 	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
 	tags uninstall uninstall-am uninstall-binPROGRAMS
 
-@ENABLE_UI_TRUE@   #TODO: move this to config.h
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
