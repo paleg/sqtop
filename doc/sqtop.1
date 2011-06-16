@@ -42,6 +42,8 @@ Without options,
 tries to connect to a Squid proxy listening at 127.0.0.1 using port 3128. 
 .Sh OPTIONS
 .Bl -tag -width indent
+.It Fl -help
+Display a brief help text.
 .It Fl -host Ar host ( Fl h Ar host )
 Squid proxy host. Defaults to 127.0.0.1.
 .It Fl -port Ar port ( Fl p Ar port )
@@ -61,14 +63,16 @@ Display detailed information (size, username and average speed) for each URL in 
 Display full details (size, username, average speed, delay pool and elapsed time) for each URL in each connection.
 .It Fl -zero ( Fl z )
 Display zero values instead of silently omitting them.
+.It Fl c
+Don't compact the display of multiple occurrences of the same URL in a single connection.
 .It Fl -once ( Fl o )
 Disable interactive mode, just print statistics once to stdout.
 .It Fl -refreshinterval Ar seconds ( Fl r Ar seconds )
 Set the refresh-interval for interactive mode.
-.It Fl -nocompactsameurls ( Fl c )
-Don't compact the display of multiple occurrences of the same URL in a single connection.
-.It Fl -help
-Display a brief help text.
+.It Fl n
+Don't do hostname lookups.
+.It Fl S
+Don't strip domain part of hostname.
 .El
 .Sh INTERACTIVE MODE
 If built with support for
@@ -82,7 +86,7 @@ Information about the Squid server currently connected to, the version of
 .Nm
 used, as well as eventual error messages are shown at the top of the display.
 .Pp
-The bottom of the display keeps various aggregates, including current and average speed, the total number of IPs connected and the total number of connections.
+The bottom of the display keeps various aggregates, including current and average speed, the total number of hosts connected and the total number of connections.
 .Pp
 Any option given on the command line can be changed from within interactive mode by pressing the key corresponding to its respective short option character.
 .Pp
@@ -91,7 +95,7 @@ In addition to the options given on the command line,
 recognizes the following keys when in interactive mode:
 .Bl -tag -width Fl
 .It Ic /
-Search for literal substrings in IPs, usernames or URLs.  Regular expressions are not parsed, currently.
+Search for literal substrings in hosts, usernames or URLs.  Regular expressions are not parsed, currently.
 .It Ic <space>
 Stop refreshing.
 .It Ic UP/DOWN, PGUP/PGDN, HOME/END
@@ -104,7 +108,7 @@ Display the help screen, including current settings for options, where applicabl
 Compact long urls to fit them on one line.
 .It Ic s
 Toggle mode of display for speed detail between current and average, current only and average only.
-.It Ic B
+.It Ic o
 Toggle connection sort order between size, current speed, average speed and max time.
 .It Ic q
 Quit

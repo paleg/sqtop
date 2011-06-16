@@ -115,10 +115,17 @@ sqstat::sqstat() {
 
    result << "  Host: ";
 #ifdef WITH_RESOLVER
-   // TODO: strip domain port
-   // TODO: disable resolving
    // TODO: show both ip and hostname
-   result << pOpts->pResolver->Resolve(scon.peer);
+   string resolved;
+   if (pOpts->dns_resolution) {
+      resolved = pOpts->pResolver->Resolve(scon.peer);
+      if (pOpts->strip_domain) {
+         pOpts->pResolver->StripDomain(resolved);
+      }
+   } else {
+      resolved = scon.peer;
+   }
+   result << resolved;
 #else
    result << scon.peer;
 #endif

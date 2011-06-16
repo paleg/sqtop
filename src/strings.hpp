@@ -19,4 +19,9 @@
 #define passwd_help "manager password"
 #define refresh_interval_help "set the refresh-interval for interactive mode"
 
+#ifdef WITH_RESOLVER
+#define dns_resolution_help "do hostname lookups"
+#define strip_domain_help "strip domain part of hostname"
+#endif
+
 #endif /* __STRINGS_H */

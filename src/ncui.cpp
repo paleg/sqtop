@@ -189,6 +189,8 @@ string ncui::helpmsg() {
    ss << "Resolver (working in " << pOpts->pResolver->ResolveMode() << " mode with " 
                                  << pOpts->pResolver->ResolveFunc() << " in " 
                                  << pOpts->pResolver->MaxThreads() << " threads):" << endl;
+   ss << " n - " << dns_resolution_help << " " << b2s(pGlobalOpts->dns_resolution) << endl;
+   ss << " S - " << strip_domain_help << " " << b2s(pGlobalOpts->strip_domain) << endl;
    ss << endl;
 #endif
    ss << "General:" << endl;
@@ -611,6 +613,24 @@ void ncui::Loop() {
             }
             pGlobalOpts->compactsameurls = !pGlobalOpts->compactsameurls;
             break;
+#ifdef WITH_RESOLVER
+         case 'n':
+            if (pGlobalOpts->dns_resolution) {
+               ShowHelpHint("Hostname lookups OFF");
+            } else {
+               ShowHelpHint("Hostname lookups ON");
+            }
+            pGlobalOpts->dns_resolution = !pGlobalOpts->dns_resolution;
+            break;
+         case 'S':
+            if (pGlobalOpts->strip_domain) {
+               ShowHelpHint("Hostname domain port stripping OFF");
+            } else {
+               ShowHelpHint("Hostname domain port stripping ON");
+            }
+            pGlobalOpts->strip_domain = !pGlobalOpts->strip_domain;
+            break;
+#endif
          case 's':
             if (pGlobalOpts->speed_mode == Options::SPEED_CURRENT) {
                pGlobalOpts->speed_mode = Options::SPEED_MIXED;

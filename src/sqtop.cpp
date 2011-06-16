@@ -35,7 +35,7 @@ static struct option longopts[] = {
    { "hosts",              required_argument,   NULL,    'H' },
    { "users",              required_argument,   NULL,    'u' },
    { "pass",               required_argument,   NULL,    'P' },
-   { "help",               no_argument,         NULL,    'n' },
+   { "help",               no_argument,         NULL,    NULL},
    { "brief",              no_argument,         NULL,    'b' },
    { "full",               no_argument,         NULL,    'f' },
    { "zero",               no_argument,         NULL,    'z' },
@@ -45,6 +45,10 @@ static struct option longopts[] = {
    { "refreshinterval",    required_argument,   NULL,    'r' },
 #endif
    { NULL,                 no_argument,         NULL,    'c' },
+#ifdef WITH_RESOLVER
+   { NULL,                 no_argument,         NULL,    'n' },
+   { NULL,                 no_argument,         NULL,    'S' },
+#endif
    { NULL,                 0,                   NULL,     0 }
 };
 
@@ -53,7 +57,14 @@ void usage(char* argv) {
    cout << "version " << VERSION << " " << copyright << "(" << contacts << ")" << endl;
    cout << endl;
    cout << "Usage:";
-   cout << "\n" << argv << " [--host host] [--port port] [--pass password] [--hosts host1,host...] [--users user1,user2] [--brief] [--full] [--zero] [--detail] [--compactsameurls] [--once] [--help]";
+   cout << "\n" << argv << " [--help] [--host host] [--port port] [--pass password] [--hosts host1,host...] [--users user1,user2] [--brief] [--detail] [--full] [--zero] [-c]";
+#ifdef ENABLE_UI
+   cout << " [--once] [-r seconds]";
+#endif
+#ifdef WITH_RESOLVER
+   cout << " [-n] [-S]";
+#endif
+   cout << "\n\t--help                       - show this help;";
    cout << "\n\t--host   (-h) host           - " << host_help << ". Default - '127.0.0.1';";
    cout << "\n\t--port   (-p) port           - " << port_help << ". Default - '3128';";
    cout << "\n\t--pass   (-P) password       - " << passwd_help << ";";
@@ -68,7 +79,10 @@ void usage(char* argv) {
    cout << "\n\t--once   (-o)                - disable interactive mode, just print statistics once to stdout;";
    cout << "\n\t--refreshinterval (-r) sec   - " << refresh_interval_help << ";";
 #endif
-   cout << "\n\t--help                       - show this help.";
+#ifdef WITH_RESOLVER
+   cout << "\n\t-n                           - do not " << dns_resolution_help << ";";
+   cout << "\n\t-S                           - do not " << strip_domain_help << ".";
+#endif
    cout << endl;
 }
 
@@ -147,7 +161,14 @@ int main(int argc, char **argv) {
    string tempusers;
    pOpts = new Options();
 
-   while ((ch = getopt_long(argc, argv, "r:u:H:h:p:P:dzbfoc", longopts, NULL)) != -1) {
+   string getopt_options = "u:H:h:p:P:dzbfc";
+#ifdef ENABLE_UI
+   getopt_options += "r:o";
+#endif
+#ifdef WITH_RESOLVER
+   getopt_options += "nS";
+#endif
+   while ((ch = getopt_long(argc, argv, getopt_options.c_str(), longopts, NULL)) != -1) {
       switch (ch) {
          case 'd':
             pOpts->detail = true;
@@ -201,6 +222,14 @@ int main(int argc, char **argv) {
                cerr << "Wrong number - " << s << endl;
                exit(1);
             }
+#endif
+#ifdef WITH_RESOLVER
+         case 'n':
+            pOpts->dns_resolution = false;
+            break;
+         case 'S':
+            pOpts->strip_domain = false;
+            break;
 #endif
          case 'c':
             pOpts->compactsameurls = false;

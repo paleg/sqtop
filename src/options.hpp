@@ -58,6 +58,8 @@ class Options {
       SORT_ORDER sort_order;
 #ifdef WITH_RESOLVER
       Resolver* pResolver;
+      bool dns_resolution;
+      bool strip_domain;
 #endif
 };
 

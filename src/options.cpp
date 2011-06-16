@@ -26,6 +26,8 @@ Options::Options() {
    sort_order = SORT_SIZE;
 #ifdef WITH_RESOLVER
    pResolver = new Resolver();
+   dns_resolution = true;
+   strip_domain = true;
 #endif
 }
 
@@ -51,6 +53,10 @@ void Options::CopyFrom(Options* pOrig) {
    showhelp = pOrig->showhelp;
    speed_mode = pOrig->speed_mode;
    sort_order = pOrig->sort_order;
+#ifdef WITH_RESOLVER
+   strip_domain = pOrig->strip_domain;
+   dns_resolution = pOrig->dns_resolution;
+#endif
 }
 
 }
