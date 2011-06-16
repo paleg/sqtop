@@ -13,7 +13,7 @@
 #define brief_help "display brief per-connection information, omits URLs"
 #define hosts_help "comma-separated list of clients (by ip[/mask]) to show"
 #define users_help "comma-separated list of clients (by login) to show"
-#define nocompact_same_help "don't compact the display of multiple occurrences of the same URL in a single connection"
+#define compact_same_help "compact the display of multiple occurrences of the same URL in a single connection"
 #define host_help "address of Squid server"
 #define port_help "port of Squid server"
 #define passwd_help "manager password"

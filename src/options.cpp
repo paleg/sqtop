@@ -17,7 +17,7 @@ Options::Options() {
    detail = false;
    ui = true;
    compactlongurls = true;
-   nocompactsameurls = false;
+   compactsameurls = true;
    freeze = false;
    do_refresh = true;
    sleep_sec = 2;
@@ -45,7 +45,7 @@ void Options::CopyFrom(Options* pOrig) {
    detail = pOrig->detail;
    ui = pOrig->ui;
    compactlongurls = pOrig->compactlongurls;
-   nocompactsameurls = pOrig->nocompactsameurls;
+   compactsameurls = pOrig->compactsameurls;
    freeze = pOrig->freeze;
    sleep_sec = pOrig->sleep_sec;
    showhelp = pOrig->showhelp;

@@ -159,7 +159,7 @@ string ncui::helpmsg() {
    ss << " f - " << full_help << " " << b2s(pGlobalOpts->full) << endl;
    ss << " b - " << brief_help << " " << b2s(pGlobalOpts->brief) << endl;
    ss << " C - compact long urls to fit one line" << " " << b2s(pGlobalOpts->compactlongurls) << endl;
-   ss << " c - " << nocompact_same_help << " " << b2s(pGlobalOpts->nocompactsameurls) << endl;
+   ss << " c - " << compact_same_help << " " << b2s(pGlobalOpts->compactsameurls) << endl;
    ss << " s - " << "speed showing mode (" << pGlobalOpts->speed_mode << ")" << endl;
    ss << " o - " << "connections sort order (" << pGlobalOpts->sort_order << ")" << endl;
    ss << " SPACE - stop refreshing " << b2s(!pGlobalOpts->do_refresh) << endl;
@@ -389,7 +389,7 @@ void ncui::Print() {
 
       vector<SQUID_Connection> sqconns_filtered = FilterConns(sqconns);
 
-      if (!pGlobalOpts->nocompactsameurls)
+      if (pGlobalOpts->compactsameurls)
          sqstat::CompactSameUrls(sqconns_filtered);
       to_print = FormatConnections(sqconns_filtered, offset);
    }
@@ -604,12 +604,12 @@ void ncui::Loop() {
             pGlobalOpts->compactlongurls = !pGlobalOpts->compactlongurls;
             break;
          case 'c':
-            if (!pGlobalOpts->nocompactsameurls) {
+            if (pGlobalOpts->compactsameurls) {
                ShowHelpHint("Compacting same urls OFF");
             } else {
                ShowHelpHint("Compacting same urls ON");
             }
-            pGlobalOpts->nocompactsameurls = !pGlobalOpts->nocompactsameurls;
+            pGlobalOpts->compactsameurls = !pGlobalOpts->compactsameurls;
             break;
          case 's':
             if (pGlobalOpts->speed_mode == Options::SPEED_CURRENT) {

@@ -35,7 +35,7 @@ class Options {
       bool detail;
       bool ui;
       bool compactlongurls;
-      bool nocompactsameurls;
+      bool compactsameurls;
       bool freeze;
       bool do_refresh;
       int sleep_sec;
