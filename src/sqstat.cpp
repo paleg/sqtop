@@ -160,6 +160,9 @@ string sqstat::SpeedsFormat(Options::SPEED_MODE mode, long av_speed, long curr_s
    std::pair <string, string> av_speed_pair;
    std::pair <string, string> curr_speed_pair;
    av_speed_pair = Utils::ConvertSpeedPair(av_speed);
+   /*if ((curr_speed == 0) && (mode == Options::SPEED_MIXED)) {
+      mode = Options::SPEED_AVERAGE;
+   }*/
    switch (mode) {
       case Options::SPEED_CURRENT:
          curr_speed_pair = Utils::ConvertSpeedPair(curr_speed);
@@ -199,7 +202,7 @@ string sqstat::SpeedsFormat(Options::SPEED_MODE mode, long av_speed, long curr_s
       if (scon.usernames.size() > 1)
          udetail += "user: " + ustat.username + ", ";
       if (pOpts->zero || (ustat.av_speed > 103) || (ustat.curr_speed > 103))
-         udetail += SpeedsFormat(pOpts->speed_mode, scon.av_speed, scon.curr_speed) + ", ";
+         udetail += SpeedsFormat(pOpts->speed_mode, ustat.av_speed, ustat.curr_speed) + ", ";
       if (pOpts->full && (pOpts->zero || (ustat.delay_pool != 0)))
          udetail += "delay_pool: " + Utils::itos(ustat.delay_pool) + ", ";
    }
@@ -420,10 +423,10 @@ vector<SQUID_Connection> sqstat::GetInfo(string host, int port, string passwd) {
             Stats->curr_speed = stat_curr_speed;
             Conn->curr_speed += stat_curr_speed;
             curr_speed += stat_curr_speed;
-         } else {
+         } /*else {
             Conn->curr_speed += stat_av_speed;
             curr_speed += stat_av_speed;
-         }
+         }*/
       }
    }
 
