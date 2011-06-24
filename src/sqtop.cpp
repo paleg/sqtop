@@ -222,6 +222,7 @@ int main(int argc, char **argv) {
                cerr << "Wrong number - " << s << endl;
                exit(1);
             }
+            break;
 #endif
 #ifdef WITH_RESOLVER
          case 'n':
