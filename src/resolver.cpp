@@ -14,7 +14,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include "Resolver.hpp"
+#include "resolver.hpp"
 
 using std::cout;
 using std::cerr;
