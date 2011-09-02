@@ -102,7 +102,7 @@ sqstat::sqstat() {
    std::stringstream result;
    if ((pOpts->Hosts.size() == 0) && (pOpts->Users.size() == 0)) {
       result << endl << "Active connections: " << active_conn;
-      result << ", active IPs: " << active_ips;
+      result << ", active hosts: " << active_ips;
       if (pOpts->zero || (av_speed > 103))
          result << ", average speed: " << Utils::ConvertSpeed(av_speed);
       result << endl;
@@ -118,10 +118,25 @@ sqstat::sqstat() {
    // TODO: show both ip and hostname
    string resolved;
    if (pOpts->dns_resolution) {
-      resolved = pOpts->pResolver->Resolve(scon.peer);
+      string tmp = scon.hostname;
       if (pOpts->strip_domain) {
-         pOpts->pResolver->StripDomain(resolved);
+         pOpts->pResolver->StripDomain(tmp);
       }
+      switch (pOpts->resolve_mode) {
+         case Options::SHOW_NAME:
+            resolved = tmp;
+            break;
+         case Options::SHOW_IP:
+            resolved = scon.peer;
+            break;
+         case Options::SHOW_BOTH:
+            if (!tmp.compare(scon.peer)) {
+               resolved = scon.peer;
+            } else {
+               resolved = tmp + " [" + scon.peer + "]";
+            }
+            break;
+      };
    } else {
       resolved = scon.peer;
    }
@@ -245,7 +260,19 @@ void sqstat::FormatChanged(string line) {
    throw sqstatException(result.str(), FORMAT_CHANGED);
 }
 
-vector<SQUID_Connection> sqstat::GetInfo(string host, int port, string passwd) {
+#ifdef WITH_RESOLVER
+string sqstat::DoResolve(Options* pOpts, string peer) {
+   string resolved;
+   if (pOpts->dns_resolution) {
+      resolved = pOpts->pResolver->Resolve(peer);
+   } else {
+      resolved = peer;
+   }
+   return resolved;
+}
+#endif
+
+vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
    sqconn con;
 
    string temp_str;
@@ -262,11 +289,11 @@ vector<SQUID_Connection> sqstat::GetInfo(string host, int port, string passwd) {
    Uri_Stats newStats;
 
    try {
-      con.open(host, port);
+      con.open(pOpts->host, pOpts->port);
    }
    catch(sqconnException &e) {
       std::stringstream error;
-      error << e.what() << " while connecting to " << host << ":" << port;
+      error << e.what() << " while connecting to " << pOpts->host << ":" << pOpts->port;
       throw sqstatException(error.str(), FAILED_TO_CONNECT);
    }
 
@@ -276,8 +303,8 @@ vector<SQUID_Connection> sqstat::GetInfo(string host, int port, string passwd) {
 
    try {
       string request = "GET cache_object://localhost/active_requests HTTP/1.0\n";
-      if (!passwd.empty()) {
-         string encoded = Base64::Encode("admin:" + passwd);
+      if (!pOpts->pass.empty()) {
+         string encoded = Base64::Encode("admin:" + pOpts->pass);
          request += "Authorization: Basic " + encoded + "\n";
       }
       con << request;
@@ -336,6 +363,9 @@ vector<SQUID_Connection> sqstat::GetInfo(string host, int port, string passwd) {
                if (Conn_it == connections.end()) {
                   SQUID_Connection connection;
                   connection.peer = peer;
+#ifdef WITH_RESOLVER
+                  connection.hostname = DoResolve(pOpts, peer);
+#endif
                   connections.push_back(connection);
                   Conn_it = connections.end() - 1;
                }

@@ -47,6 +47,7 @@ class Options {
          SPEED_AVERAGE,
          SPEED_CURRENT
       };
+      SPEED_MODE speed_mode;
 
       enum SORT_ORDER {
          SORT_SIZE,
@@ -54,12 +55,18 @@ class Options {
          SORT_AVERAGE_SPEED,
          SORT_MAX_TIME
       };
-      SPEED_MODE speed_mode;
       SORT_ORDER sort_order;
 #ifdef WITH_RESOLVER
       Resolver* pResolver;
       bool dns_resolution;
       bool strip_domain;
+
+      enum RESOLVE_MODE {
+         SHOW_BOTH,
+         SHOW_NAME,
+         SHOW_IP
+      };
+      RESOLVE_MODE resolve_mode;
 #endif
 };
 

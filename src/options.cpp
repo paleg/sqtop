@@ -28,6 +28,7 @@ Options::Options() {
    pResolver = new Resolver();
    dns_resolution = true;
    strip_domain = true;
+   resolve_mode = SHOW_BOTH;
 #endif
 }
 
@@ -56,6 +57,7 @@ void Options::CopyFrom(Options* pOrig) {
 #ifdef WITH_RESOLVER
    strip_domain = pOrig->strip_domain;
    dns_resolution = pOrig->dns_resolution;
+   resolve_mode = pOrig->resolve_mode;
 #endif
 }
 

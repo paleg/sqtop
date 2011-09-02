@@ -86,12 +86,6 @@ void usage(char* argv) {
    cout << endl;
 }
 
-sqtop::Options* pOpts;
-
-#ifdef ENABLE_UI
-pthread_t sq_thread;
-#endif
-
 /*static void finish(int sig) {
    foad = sig;
 }*/
@@ -100,7 +94,7 @@ bool DESC(int a, int b) {
    return a > b;
 }
 
-string conns_format(vector<SQUID_Connection> conns) {
+string conns_format(Options* pOpts, vector<SQUID_Connection> conns) {
    std::stringstream result;
 
    if (pOpts->compactsameurls)
@@ -128,6 +122,7 @@ string conns_format(vector<SQUID_Connection> conns) {
 #ifdef ENABLE_UI
 struct thread_args {
    ncui* ui;
+   Options* pOpts;
 };
 
 void squid_loop(void* threadarg) {
@@ -135,9 +130,9 @@ void squid_loop(void* threadarg) {
    std::vector<SQUID_Connection> stat;
    thread_args* pArgs = reinterpret_cast<thread_args*>(threadarg);
    while (true) {
-      if (pOpts->do_refresh) {
+      if (pArgs->pOpts->do_refresh) {
          try {
-            stat = sqs.GetInfo(pOpts->host, pOpts->port, pOpts->pass);
+            stat = sqs.GetInfo(pArgs->pOpts);
             pArgs->ui->ClearError();
             pArgs->ui->SetSpeeds(sqs.av_speed, sqs.curr_speed);
             pArgs->ui->SetActiveConnCount(sqs.active_conn);
@@ -148,7 +143,7 @@ void squid_loop(void* threadarg) {
          }
          pArgs->ui->Tick();
       }
-      for (int i=0; i<pOpts->sleep_sec; ++i) {
+      for (int i=0; i<pArgs->pOpts->sleep_sec; ++i) {
          sleep(1);
       }
    }
@@ -159,7 +154,8 @@ int main(int argc, char **argv) {
    // TODO: config file ?
    int ch;
    string tempusers;
-   pOpts = new Options();
+
+   sqtop::Options* pOpts = new Options();
 
    string getopt_options = "u:H:h:p:P:dzbfc";
 #ifdef ENABLE_UI
@@ -252,7 +248,13 @@ int main(int argc, char **argv) {
       ui->CursesInit();
       thread_args args;
       args.ui = ui;
+      args.pOpts = pOpts;
+#ifdef WITH_RESOLVER
+      pOpts->pResolver->Start(MAX_THREADS);
+      pOpts->pResolver->resolve_mode = Resolver::RESOLVE_ASYNC;
+#endif
 
+      pthread_t sq_thread;
       pthread_create(&sq_thread, NULL, (void *(*) (void *)) &squid_loop, (void *) &args);
 
       ui->Loop();
@@ -265,7 +267,7 @@ int main(int argc, char **argv) {
       sqstat sqs;
       std::vector<SQUID_Connection> stat;
       try {
-         stat = sqs.GetInfo(pOpts->host, pOpts->port, pOpts->pass);
+         stat = sqs.GetInfo(pOpts);
       }
       catch (sqstatException &e) {
          cerr << e.what() << endl;
@@ -275,7 +277,7 @@ int main(int argc, char **argv) {
 #ifdef WITH_RESOLVER
       pOpts->pResolver->resolve_mode = Resolver::RESOLVE_SYNC;
 #endif
-      cout << conns_format(stat) << endl;
+      cout << conns_format(pOpts, stat) << endl;
 #ifdef ENABLE_UI
    }
 #endif

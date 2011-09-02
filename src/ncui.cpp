@@ -44,12 +44,40 @@ std::ostream& operator<<( std::ostream& os, const Options::SORT_ORDER& order ) {
 }
 
 inline void operator++(Options::SPEED_MODE& mode, int) {
-   mode = Options::SPEED_MODE(mode + 1);
+   if (mode >= Options::SPEED_CURRENT) {
+      mode = Options::SPEED_MIXED;
+   } else {
+      mode = Options::SPEED_MODE(mode + 1);
+   }
 }
 
 inline void operator++(Options::SORT_ORDER& order, int) {
-   order = Options::SORT_ORDER(order + 1);
+   if (order >= Options::SORT_MAX_TIME) {
+      order = Options::SORT_SIZE;
+   } else {
+      order = Options::SORT_ORDER(order + 1);
+   }
 }
+
+#ifdef WITH_RESOLVER
+std::ostream& operator<<( std::ostream& os, const Options::RESOLVE_MODE& mode )
+{
+   switch (mode) {
+      case Options::SHOW_NAME: os << "host name only"; break;
+      case Options::SHOW_IP: os << "host ip only"; break;
+      case Options::SHOW_BOTH: os << "both ip and host name"; break;
+   }
+   return os;
+}
+
+inline void operator++(Options::RESOLVE_MODE& mode, int) {
+   if (mode >= Options::SHOW_IP) {
+      mode = Options::SHOW_BOTH;
+   } else {
+      mode = Options::RESOLVE_MODE(mode + 1);
+   }
+}
+#endif
 
 ncui::ncui(Options* pgOpts) {
    pthread_mutexattr_init(&mattr);
@@ -68,10 +96,6 @@ ncui::ncui(Options* pgOpts) {
    //ticks = 0;
    pOpts = new Options();
    pOpts->CopyFrom(pGlobalOpts);
-#ifdef WITH_RESOLVER
-   pOpts->pResolver->resolve_mode = Resolver::RESOLVE_ASYNC;
-   pOpts->pResolver->Start(MAX_THREADS);
-#endif
 }
 
 ncui::~ncui() {
@@ -186,15 +210,16 @@ string ncui::helpmsg() {
    ss << " r - " << refresh_interval_help << " (" << Utils::itos(pGlobalOpts->sleep_sec) << ")" << endl;
    ss << endl;
 #ifdef WITH_RESOLVER
-   ss << "Resolver (working in " << pOpts->pResolver->ResolveMode() << " mode with " 
-                                 << pOpts->pResolver->ResolveFunc() << " in " 
-                                 << pOpts->pResolver->MaxThreads() << " threads):" << endl;
+   ss << "Resolver (working in " << pGlobalOpts->pResolver->ResolveMode() << " mode with " 
+                                 << pGlobalOpts->pResolver->ResolveFunc() << " in " 
+                                 << pGlobalOpts->pResolver->MaxThreads() << " threads):" << endl;
    ss << " n - " << dns_resolution_help << " " << b2s(pGlobalOpts->dns_resolution) << endl;
    ss << " S - " << strip_domain_help << " " << b2s(pGlobalOpts->strip_domain) << endl;
+   ss << " R - " << "hosts showing mode (" << pGlobalOpts->resolve_mode << ")" << endl;
    ss << endl;
 #endif
    ss << "General:" << endl;
-   ss << " / - search for substring in IPs, usernames and urls" << endl;
+   ss << " / - search for substring in hosts, usernames and urls" << endl;
    ss << " ? - this help" << endl;
    ss << " q - quit" << endl;
    ss << endl;
@@ -624,33 +649,37 @@ void ncui::Loop() {
             break;
          case 'S':
             if (pGlobalOpts->strip_domain) {
-               ShowHelpHint("Hostname domain port stripping OFF");
+               ShowHelpHint("Hostname domain part stripping OFF");
             } else {
-               ShowHelpHint("Hostname domain port stripping ON");
+               ShowHelpHint("Hostname domain part stripping ON");
             }
             pGlobalOpts->strip_domain = !pGlobalOpts->strip_domain;
             break;
 #endif
          case 's':
-            if (pGlobalOpts->speed_mode == Options::SPEED_CURRENT) {
-               pGlobalOpts->speed_mode = Options::SPEED_MIXED;
-            } else {
-               pGlobalOpts->speed_mode++;
-            }
+            pGlobalOpts->speed_mode++;
             ss.str("");
             ss << "Speed showing mode - " << pGlobalOpts->speed_mode;
             ShowHelpHint(ss.str());
             break;
          case 'o':
-            if (pGlobalOpts->sort_order == Options::SORT_MAX_TIME) {
-               pGlobalOpts->sort_order = Options::SORT_SIZE;
-            } else {
-               pGlobalOpts->sort_order++;
-            }
+            pGlobalOpts->sort_order++;
             ss.str("");
             ss << "Connections sort order - " << pGlobalOpts->sort_order;
             ShowHelpHint(ss.str());
             break;
+#ifdef WITH_RESOLVER
+         case 'R':
+            if (pGlobalOpts->resolve_mode == Options::SHOW_IP) {
+               pGlobalOpts->resolve_mode = Options::SHOW_BOTH;
+            } else {
+               pGlobalOpts->resolve_mode++;
+            }
+            ss.str("");
+            ss << "Hosts showing mode - " << pGlobalOpts->resolve_mode;
+            ShowHelpHint(ss.str());
+            break;
+#endif
          case 'h':
             pGlobalOpts->freeze = true;
             try {

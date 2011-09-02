@@ -33,6 +33,9 @@ struct Uri_Stats {
 
 struct SQUID_Connection {
    std::string peer;
+#ifdef WITH_RESOLVER
+   std::string hostname;
+#endif
    long long sum_size;
    long max_etime;
    long av_speed;
@@ -66,7 +69,7 @@ class sqstatException: public std::exception {
 class sqstat {
    public:
       sqstat();
-      std::vector<SQUID_Connection> GetInfo(std::string host, int port, std::string passwd);
+      std::vector<SQUID_Connection> GetInfo(Options* pOpts);
 
       std::string squid_version;
       int active_conn;
@@ -92,6 +95,10 @@ class sqstat {
    private:
       std::vector<SQUID_Connection> connections;
       std::vector<SQUID_Connection> oldConnections;
+
+#ifdef WITH_RESOLVER
+      std::string DoResolve(Options* pOpts, std::string peer);
+#endif
 
       time_t lastruntime;
 
