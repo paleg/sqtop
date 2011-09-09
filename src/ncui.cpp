@@ -279,6 +279,29 @@ formattedline_t ncui::MakeNewLine(int y) {
    return t;
 }
 
+bool SearchString(Options* pOpts, SQUID_Connection scon, string search_string) {
+   bool ret = false;
+   if (!search_string.empty()) {
+      bool in_host = false;
+      bool in_name = (scon.hostname.find(search_string) != string::npos);
+      bool in_ip = (scon.peer.find(search_string) != string::npos);
+      switch (pOpts->resolve_mode) {
+         case Options::SHOW_NAME:
+            in_host = in_name;
+            break;
+         case Options::SHOW_IP:
+            in_host = in_ip;
+            break;
+         case Options::SHOW_BOTH:
+            in_host = (in_name || in_ip);
+            break;
+      };
+      bool in_users = Utils::VectorFindSubstr(scon.usernames, search_string);
+      ret = (in_host || in_users);
+   }
+   return ret;
+}
+
 vector<formattedline_t> ncui::FormatConnections(vector<SQUID_Connection> conns, int offset) {
 //   AddWatch("orig", Utils::itos(sqconns.size()));
    vector<formattedline_t> result;
@@ -315,8 +338,7 @@ vector<formattedline_t> ncui::FormatConnections(vector<SQUID_Connection> conns, 
       string header_str = sqstat::ConnFormat(pOpts, scon);
       coef = CompactLongLine(header_str);
       result.push_back(MakeResult(header_str, y, coef, scon, ""));
-      if ((!search_string.empty()) && 
-          ((scon.peer.find(search_string) != string::npos) || (Utils::VectorFindSubstr(scon.usernames, search_string)))) {
+      if (SearchString(pOpts, scon, search_string)) {
          if (selected_index > result.size() - 1)
             increment = -1;
          else
@@ -670,11 +692,7 @@ void ncui::Loop() {
             break;
 #ifdef WITH_RESOLVER
          case 'R':
-            if (pGlobalOpts->resolve_mode == Options::SHOW_IP) {
-               pGlobalOpts->resolve_mode = Options::SHOW_BOTH;
-            } else {
-               pGlobalOpts->resolve_mode++;
-            }
+            pGlobalOpts->resolve_mode++;
             ss.str("");
             ss << "Hosts showing mode - " << pGlobalOpts->resolve_mode;
             ShowHelpHint(ss.str());

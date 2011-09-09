@@ -68,7 +68,7 @@ sqstat::sqstat() {
 
 /* static */ bool sqstat::CompareCURRSPEED(SQUID_Connection a, SQUID_Connection b) {
    return a.curr_speed > b.curr_speed;
-}   
+}
 
 /* static */ void sqstat::CompactSameUrls(vector<SQUID_Connection>& sqconns) {
    for (vector<SQUID_Connection>::iterator it = sqconns.begin(); it != sqconns.end(); ++it) {
@@ -115,7 +115,6 @@ sqstat::sqstat() {
 
    result << "  Host: ";
 #ifdef WITH_RESOLVER
-   // TODO: show both ip and hostname
    string resolved;
    if (pOpts->dns_resolution) {
       string tmp = scon.hostname;
