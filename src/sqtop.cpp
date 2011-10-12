@@ -273,6 +273,7 @@ int main(int argc, char **argv) {
          cerr << e.what() << endl;
          exit(1);
       }
+      pOpts->speed_mode = Options::SPEED_AVERAGE;
       cout << sqstat::HeadFormat(pOpts, sqs.active_conn, stat.size(), sqs.av_speed) << endl;
 #ifdef WITH_RESOLVER
       pOpts->pResolver->resolve_mode = Resolver::RESOLVE_SYNC;

@@ -65,7 +65,7 @@ std::ostream& operator<<( std::ostream& os, const Options::RESOLVE_MODE& mode )
    switch (mode) {
       case Options::SHOW_NAME: os << "host name only"; break;
       case Options::SHOW_IP: os << "host ip only"; break;
-      case Options::SHOW_BOTH: os << "both ip and host name"; break;
+      case Options::SHOW_BOTH: os << "both host name and ip"; break;
    }
    return os;
 }

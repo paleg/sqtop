@@ -178,17 +178,7 @@ string Resolver::ResolveAsync(string ip) {
 }
 
 string Resolver::ResolveSync(string ip) {
-   string result;
-   //cout << "Got " << ip << " in sync request" << endl;
-   try {
-      result = DoResolve(ip);
-   }
-   catch (int n) {
-      //cout << "Error " << n << endl;
-      result = ip;
-   }
-   //cout << "Returning " << result << endl;
-   return result;
+   return DoResolve(ip);
 }
 
 /* static */ string Resolver::DoResolve(string ip) {

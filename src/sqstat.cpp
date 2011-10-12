@@ -183,7 +183,7 @@ string sqstat::SpeedsFormat(Options::SPEED_MODE mode, long av_speed, long curr_s
          result << "current speed: " << curr_speed_pair.first << curr_speed_pair.second;
          break;
       case Options::SPEED_MIXED:
-         if (curr_speed != av_speed) {
+         if ((curr_speed != av_speed) && (curr_speed > 103)) {
             std::pair <string, string> curr_speed_pair;
             curr_speed_pair = Utils::ConvertSpeedPair(curr_speed);
             result << "current/average speed: ";

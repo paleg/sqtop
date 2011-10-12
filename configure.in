@@ -90,7 +90,7 @@ if test x$resolver != xno; then
 
       case "$host_os" in
          darwin10.[[0-4]]*) threadsafe_getnameinfo=0 ;;
-         darwin10.*) threadsafe_getnameinfo=1 ;;
+         darwin1[[0-1]].*) threadsafe_getnameinfo=1 ;;
          linux*) threadsafe_getnameinfo=1 ;;
          *) threadsafe_getnameinfo=0 ;;
       esac
