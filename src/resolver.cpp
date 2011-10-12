@@ -47,7 +47,6 @@ void Resolver::init() {
    pthread_mutex_init(&rMutex, &mAttr);
 
    pthread_condattr_init(&cAttr);
-   pthread_condattr_setpshared(&cAttr, PTHREAD_PROCESS_SHARED);
    pthread_cond_init(&rCond, &cAttr);
 
    //cout << "Starting " << max_threads << " threads" << endl;
