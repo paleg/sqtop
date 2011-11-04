@@ -39,7 +39,7 @@ void Resolver::Start(int threads_num) {
 }
 
 void Resolver::init() {
-#if not defined(USE_GETHOSTBYADDR_R) && not defined(THREADSAFE_GETNAMEINFO)
+#if !defined(USE_GETHOSTBYADDR_R) && !defined(THREADSAFE_GETNAMEINFO)
    /* getnameinfo (on *BSD) and gethostbyaddr is notreentrant */
    max_threads = 1;
 #endif
