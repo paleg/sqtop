@@ -194,4 +194,15 @@ bool Utils::UserMemberOf(vector<string>& v, vector<string>& users) {
      return false;
 }
 
+string Utils::replace(string text, string s, string d)
+{
+  for(std::string::size_type index=0; index=text.find(s, index), index!=std::string::npos;)
+  {
+    text.erase(index, s.length());
+    text.insert(index, d);
+    index+=d.length();
+  }
+  return text;
+}
+
 // vim: ai ts=3 sts=3 et sw=3 expandtab

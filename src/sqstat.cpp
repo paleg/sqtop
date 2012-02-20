@@ -253,9 +253,9 @@ Uri_Stats sqstat::FindUriStatsById(vector<SQUID_Connection> conns, string id) {
 void sqstat::FormatChanged(string line) {
    std::stringstream result;
    result << "Warning!!! Please send bug report.";
-   result << " active_requests format changed - \'" << line << "\'." << endl;
-   result << squid_version << endl;
-   result << PACKAGE_NAME << "-" << VERSION;
+   result << " active_requests format changed - \'" << line << "\'.";
+   result << " " << squid_version << ".";
+   result << " " << PACKAGE_NAME << "-" << VERSION;
    throw sqstatException(result.str(), FORMAT_CHANGED);
 }
 
@@ -313,7 +313,7 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
             if (n==0) {
                if (temp_str != "HTTP/1.0 200 OK") {
                   std::stringstream error;
-                  error << "Access to squid statistic denied: " << temp_str << endl << endl;
+                  error << "Access to squid statistic denied: " << temp_str;
                   /*string ip;
                   try {
                      ip = get_ip();
@@ -321,10 +321,10 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
                   catch (string) {
                      ip = "<your_host_ip>";
                   }*/
-                  error << "You must enable access to squid statistic in squid.conf by adding strings like:" << endl << endl;
+                  /*error << "You must enable access to squid statistic in squid.conf by adding strings like:" << endl << endl;
                   error << "\tacl adminhost src <admin_host_ip_here>/255.255.255.255" << endl;
                   error << "\thttp_access allow manager adminhost" << endl;
-                  error << "\thttp_access deny manager";
+                  error << "\thttp_access deny manager";*/
                   throw sqstatException(error.str(), ACCESS_DENIED);
                } else {
                   n=1;

@@ -26,6 +26,7 @@ namespace Utils {
    extern bool IPMemberOf(std::vector<std::string>& v, std::string& ip_in);
    extern void ToLower(std::string& rData);
    extern bool UserMemberOf(std::vector<std::string>& v, std::vector<std::string>& users);
+   extern std::string replace(std::string text, std::string s, std::string d);
 };
 
 #endif /* __UTILS_H */
