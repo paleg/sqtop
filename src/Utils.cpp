@@ -105,12 +105,12 @@ string Utils::ConvertSize(long long esize) {
     long long mb = esize/1024/1024 - gb*1024;
     long long kb = (esize/1024) % 1024;
     if (gb != 0) {
-        result += itos(gb) + "Gb ";
+        result += itos(gb) + "GB ";
     }
     if (mb != 0) {
-        result += itos(mb) + "Mb ";
+        result += itos(mb) + "MB ";
     }
-    result += itos(kb) + "Kb";
+    result += itos(kb) + "KB";
     return result;
 }
 
@@ -120,17 +120,17 @@ std::pair <string, string> Utils::ConvertSpeedPair(long long speed) {
    //long kb = speed/1024;
    if (mb != 0) {
        result.first = ftos(speed/1024.0/1024.0, 2);
-       result.second = "Mb/s";
+       result.second = "MB/s";
    } else {
        result.first = ftos(speed/1024.0, 1);
-       result.second = "Kb/s";
+       result.second = "KB/s";
    }
    return result;
 }
 
 string Utils::ConvertSpeed(long long speed) {
    std::pair <string, string> result = Utils::ConvertSpeedPair(speed);
-   return result.first+result.second;
+   return result.first+" "+result.second;
 }
 
 bool Utils::VectorFindSubstr(vector<string>& v, string& str) {

@@ -195,7 +195,7 @@ string sqstat::SpeedsFormat(Options::SPEED_MODE mode, long av_speed, long curr_s
             break;
          }
       case Options::SPEED_AVERAGE:
-         result << "average speed: " + av_speed_pair.first + av_speed_pair.second;
+         result << "average speed: " + av_speed_pair.first + " " + av_speed_pair.second;
          break;
    };
    return result.str();
