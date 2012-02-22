@@ -35,6 +35,16 @@ vector<string> Utils::SplitString(string str, string delim) {
    return result;
 }
 
+std::pair <string, string> Utils::SplitIPPort(string ipport) {
+   std::pair <string, string> result;
+   size_t found = ipport.find_last_of(":");
+   if (found != string::npos) {
+      result.first = ipport.substr(0, found);
+      result.second = ipport.substr(found+1);
+   }
+   return result;
+}
+
 string Utils::JoinVector(vector<string> inv, string delim) {
    string result = "";
    for (vector<string>::iterator it = inv.begin(); it != inv.end(); ++it)

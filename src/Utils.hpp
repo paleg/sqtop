@@ -11,6 +11,7 @@
 
 namespace Utils {
    extern std::vector<std::string> SplitString(std::string str, std::string delim);
+   extern std::pair <std::string, std::string> SplitIPPort(std::string ipport);
    extern std::string JoinVector(std::vector<std::string> inv, std::string delim);
    extern std::string itos(long long num);
    extern long int stol(std::string s);

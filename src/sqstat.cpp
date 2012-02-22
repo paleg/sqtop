@@ -354,16 +354,15 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
                newStats.delay_pool = -1;
             } else { FormatChanged(temp_str); }
          } else if (temp_str.substr(0,6) == "peer: ") {
-            result = Utils::SplitString(temp_str, ":");
-            if (result.size() == 3) {
-               string peer = result[1].substr(1);
-               Conn_it = std::find_if( connections.begin(), connections.end(), std::bind2nd( std::ptr_fun(ConnByPeer) , peer) );
+            std::pair <string, string> peer = Utils::SplitIPPort(temp_str.substr(6));
+            if (!peer.first.empty()) {
+               Conn_it = std::find_if( connections.begin(), connections.end(), std::bind2nd( std::ptr_fun(ConnByPeer) , peer.first) );
                // if it is new peer, create new SQUID_Connection
                if (Conn_it == connections.end()) {
                   SQUID_Connection connection;
-                  connection.peer = peer;
+                  connection.peer = peer.first;
 #ifdef WITH_RESOLVER
-                  connection.hostname = DoResolve(pOpts, peer);
+                  connection.hostname = DoResolve(pOpts, peer.first);
 #endif
                   connections.push_back(connection);
                   Conn_it = connections.end() - 1;
