@@ -37,7 +37,7 @@ vector<string> Utils::SplitString(string str, string delim) {
 
 std::pair <string, string> Utils::SplitIPPort(string ipport) {
    std::pair <string, string> result;
-   size_t found = ipport.find_last_of(":");
+   std::string::size_type found = ipport.find_last_of(":");
    if (found != string::npos) {
       result.first = ipport.substr(0, found);
       result.second = ipport.substr(found+1);
