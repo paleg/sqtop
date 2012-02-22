@@ -266,6 +266,10 @@ int main(int argc, char **argv) {
 #endif
       sqstat sqs;
       std::vector<SQUID_Connection> stat;
+#ifdef WITH_RESOLVER
+      pOpts->pResolver->resolve_mode = Resolver::RESOLVE_SYNC;
+#endif
+      pOpts->speed_mode = Options::SPEED_AVERAGE;
       try {
          stat = sqs.GetInfo(pOpts);
       }
@@ -273,11 +277,7 @@ int main(int argc, char **argv) {
          cerr << e.what() << endl;
          exit(1);
       }
-      pOpts->speed_mode = Options::SPEED_AVERAGE;
       cout << sqstat::HeadFormat(pOpts, sqs.active_conn, stat.size(), sqs.av_speed) << endl;
-#ifdef WITH_RESOLVER
-      pOpts->pResolver->resolve_mode = Resolver::RESOLVE_SYNC;
-#endif
       cout << conns_format(pOpts, stat) << endl;
 #ifdef ENABLE_UI
    }
