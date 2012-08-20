@@ -311,7 +311,7 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
       while ((con >> temp_str) != 0) {
          if (connections.size()==0) {
             if (n==0) {
-               if (temp_str != "HTTP/1.0 200 OK") {
+               if (temp_str != "HTTP/1.0 200 OK" && temp_str != "HTTP/1.1 200 OK") {
                   std::stringstream error;
                   error << "Access to squid statistic denied: " << temp_str;
                   /*string ip;
