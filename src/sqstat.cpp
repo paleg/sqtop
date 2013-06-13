@@ -353,22 +353,25 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
                newStats.etime = 0;
                newStats.delay_pool = -1;
             } else { FormatChanged(temp_str); }
-         } else if (temp_str.substr(0,6) == "peer: ") {
-            std::pair <string, string> peer = Utils::SplitIPPort(temp_str.substr(6));
-            if (!peer.first.empty()) {
-               Conn_it = std::find_if( connections.begin(), connections.end(), std::bind2nd( std::ptr_fun(ConnByPeer) , peer.first) );
-               // if it is new peer, create new SQUID_Connection
-               if (Conn_it == connections.end()) {
-                  SQUID_Connection connection;
-                  connection.peer = peer.first;
+         } else if ((temp_str.substr(0,6) == "peer: ") or (temp_str.substr(0,8) == "remote: ")) {
+            result = Utils::SplitString(temp_str, " ");
+            if (result.size() == 2) {
+               std::pair <string, string> peer = Utils::SplitIPPort(result[1]);
+               if (!peer.first.empty()) {
+                  Conn_it = std::find_if( connections.begin(), connections.end(), std::bind2nd( std::ptr_fun(ConnByPeer) , peer.first) );
+                  // if it is new peer, create new SQUID_Connection
+                  if (Conn_it == connections.end()) {
+                     SQUID_Connection connection;
+                     connection.peer = peer.first;
 #ifdef WITH_RESOLVER
-                  connection.hostname = DoResolve(pOpts, peer.first);
+                     connection.hostname = DoResolve(pOpts, peer.first);
 #endif
-                  connections.push_back(connection);
-                  Conn_it = connections.end() - 1;
+                     connections.push_back(connection);
+                     Conn_it = connections.end() - 1;
+                  }
+                  Conn_it->stats.push_back(newStats);
+                  Stat_it = Conn_it->stats.end() - 1;
                }
-               Conn_it->stats.push_back(newStats);
-               Stat_it = Conn_it->stats.end() - 1;
             } else { FormatChanged(temp_str); }
          } else if (temp_str.substr(0,4) == "uri ") {
             result = Utils::SplitString(temp_str, " ");
