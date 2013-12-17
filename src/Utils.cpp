@@ -61,11 +61,11 @@ long int Utils::stol(string s) {
    long int val = strtol(s.c_str(), &endptr, base);
    if ((errno == ERANGE && (val == LONG_MAX || val == LONG_MIN))
       || (errno != 0 && val == 0)) {
-      throw string("Unacceptable input");
+      throw std::range_error("Unacceptable input");
    }
    string end = string(endptr);
    if (end.size() != 0) {
-      throw string("Invalid input '"+end+"'");
+      throw std::runtime_error("Invalid input '"+end+"'");
    }
    return val;
 }

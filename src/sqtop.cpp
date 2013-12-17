@@ -189,8 +189,8 @@ int main(int argc, char **argv) {
             try {
                pOpts->port = Utils::stol(optarg);
             }
-            catch(string &s) {
-               cerr << "Unknown port - " << s << endl;
+            catch(const std::runtime_error& s) {
+               cerr << "Unknown port - " << s.what() << endl;
                exit(1);
             }
             break;
@@ -214,8 +214,8 @@ int main(int argc, char **argv) {
                else
                   cerr << "Refresh interval should be greater than 0, using default - " << pOpts->sleep_sec << endl;
             }
-            catch(string &s) {
-               cerr << "Wrong number - " << s << endl;
+            catch(const std::runtime_error& s) {
+               cerr << "Wrong number - " << s.what() << endl;
                exit(1);
             }
             break;

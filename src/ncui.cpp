@@ -729,8 +729,8 @@ void ncui::Loop() {
                   pGlobalOpts->port = port;
                }
             }
-            catch(string &s) {
-               ShowHelpHint(s);
+            catch (const std::runtime_error& error) {
+               ShowHelpHint(error.what());
             }
             sqconns.clear();
             pGlobalOpts->freeze = false;
@@ -745,8 +745,8 @@ void ncui::Loop() {
                else
                   ShowHelpHint("Invalid refresh interval");
             }
-            catch(string &s) {
-               ShowHelpHint(s);
+            catch(const std::runtime_error& error) {
+               ShowHelpHint(error.what());
             }
             pGlobalOpts->freeze = false;
             break;
