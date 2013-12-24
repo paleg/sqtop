@@ -24,6 +24,7 @@ Options::Options() {
    showhelp = false;
    speed_mode = SPEED_MIXED;
    sort_order = SORT_SIZE;
+   quit = false;
 #ifdef WITH_RESOLVER
    pResolver = new Resolver();
    dns_resolution = true;

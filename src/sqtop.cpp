@@ -3,10 +3,6 @@
  * Released under the GNU GPL, see the COPYING file in the source distribution for its full text.
  */
 
-#ifdef ENABLE_UI
-#include <pthread.h>
-#endif
-
 //sleep
 #include <unistd.h>
 #include <getopt.h>
@@ -16,6 +12,11 @@
 #include <sstream>
 
 #include "config.h"
+
+#ifdef ENABLE_UI
+#include <thread>
+#include <chrono>
+#endif
 
 #include "strings.hpp"
 #include "Utils.hpp"
@@ -120,31 +121,28 @@ string conns_format(Options* pOpts, vector<SQUID_Connection> conns) {
 }
 
 #ifdef ENABLE_UI
-struct thread_args {
-   ncui* ui;
-   Options* pOpts;
-};
-
-void squid_loop(void* threadarg) {
+void squid_loop(ncui* ui, Options* pOpts) {
    sqstat sqs;
-   std::vector<SQUID_Connection> stat;
-   thread_args* pArgs = reinterpret_cast<thread_args*>(threadarg);
-   while (true) {
-      if (pArgs->pOpts->do_refresh) {
+   vector<SQUID_Connection> stat;
+   while (pOpts->quit != true) {
+      if (pOpts->do_refresh) {
          try {
-            stat = sqs.GetInfo(pArgs->pOpts);
-            pArgs->ui->ClearError();
-            pArgs->ui->SetSpeeds(sqs.av_speed, sqs.curr_speed);
-            pArgs->ui->SetActiveConnCount(sqs.active_conn);
-            pArgs->ui->SetStat(stat);
+            stat = sqs.GetInfo(pOpts);
+            ui->ClearError();
+            ui->SetSpeeds(sqs.av_speed, sqs.curr_speed);
+            ui->SetActiveConnCount(sqs.active_conn);
+            ui->SetStat(stat);
          }
          catch (sqstatException &e) {
-            pArgs->ui->SetError(e.what());
+            ui->SetError(e.what());
          }
-         pArgs->ui->Tick();
+         ui->Tick();
       }
-      for (int i=0; i<pArgs->pOpts->sleep_sec; ++i) {
-         sleep(1);
+      for (int i=0; i < pOpts->sleep_sec * 10; ++i) {
+         std::this_thread::sleep_for(std::chrono::milliseconds(100));
+         if (pOpts->quit) {
+            break;
+         }
       }
    }
 }
@@ -246,26 +244,23 @@ int main(int argc, char **argv) {
    if (pOpts->ui) {
       ncui *ui = new ncui(pOpts);
       ui->CursesInit();
-      thread_args args;
-      args.ui = ui;
-      args.pOpts = pOpts;
 #ifdef WITH_RESOLVER
       pOpts->pResolver->Start(MAX_THREADS);
       pOpts->pResolver->resolve_mode = Resolver::RESOLVE_ASYNC;
 #endif
 
-      pthread_t sq_thread;
-      pthread_create(&sq_thread, NULL, (void *(*) (void *)) &squid_loop, (void *) &args);
+      std::thread sq_thread(squid_loop, ui, pOpts);
 
       ui->Loop();
 
-      pthread_cancel(sq_thread);
+      pOpts->quit = true;
+      sq_thread.join();
       ui->CursesFinish();
       delete ui;
    } else {
 #endif
       sqstat sqs;
-      std::vector<SQUID_Connection> stat;
+      vector<SQUID_Connection> stat;
 #ifdef WITH_RESOLVER
       pOpts->pResolver->resolve_mode = Resolver::RESOLVE_SYNC;
 #endif

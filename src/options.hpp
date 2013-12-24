@@ -41,6 +41,7 @@ class Options {
       int sleep_sec;
       bool showhelp;
       bool showhelphint;
+      bool quit;
 
       enum SPEED_MODE {
          SPEED_MIXED,
