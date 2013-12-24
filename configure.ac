@@ -2,7 +2,7 @@ AC_PREREQ([2.64])
 AC_INIT([sqtop], [2013-12-17], [o.palij@gmail.com])
 
 AC_CONFIG_AUX_DIR(cfgaux)
-AC_CONFIG_MACRO_DIR([cfgaux])
+m4_include([cfgaux/ax_cxx_compile_stdcxx_11.m4])
 
 AC_CONFIG_SRCDIR([src/sqtop.cpp])
 AC_CONFIG_HEADERS([src/config.h])
@@ -12,6 +12,11 @@ AM_INIT_AUTOMAKE([foreign])
 AC_CANONICAL_HOST
 
 AC_GNU_SOURCE
+
+AC_LANG([C++])
+AC_PROG_CXX
+AC_PROG_INSTALL
+AX_CXX_COMPILE_STDCXX_11([noext], [mandatory])
 
 AC_ARG_ENABLE(ui,
 [  --enable-ui     build with ncurses user interface],
@@ -37,11 +42,6 @@ AC_ARG_WITH(resolver,
 if test x$resolver = xyes; then
    resolver=guess
 fi
-
-AC_LANG([C++])
-AC_PROG_CXX
-AC_PROG_INSTALL
-AX_CXX_COMPILE_STDCXX_11([noext], [], [AC_MSG_ERROR([Unable to find cpp11 compatible compiler]); break;])
 
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h netdb.h netinet/in.h getopt.h sys/socket.h], [], [AC_MSG_ERROR([Unable to find some C headers]); break;])
