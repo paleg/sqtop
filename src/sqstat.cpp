@@ -299,6 +299,7 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
    connections.clear();
 
    time_t timenow = 0;
+   time_t timediff = 0;
 
    try {
       string request = "GET cache_object://localhost/active_requests HTTP/1.0\n";
@@ -329,6 +330,7 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
                } else {
                   n=1;
                   timenow = time(NULL);
+                  timediff = timenow - lastruntime;
                   continue;
                }
             }
@@ -444,9 +446,8 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
          av_speed += stat_av_speed;
          long stat_curr_speed = 0;
          if ((Stats->size != 0) && (Stats->oldsize != 0) && (lastruntime != 0) && (Stats->size > Stats->oldsize)) {
-            time_t diff = timenow - lastruntime;
-            if (diff < 1) diff = 1;
-            stat_curr_speed = (Stats->size - Stats->oldsize)/(timenow - lastruntime);
+            if (timediff < 1) timediff = 1;
+            stat_curr_speed = (Stats->size - Stats->oldsize) / timediff;
             /*if ((stat_curr_speed > 10000000) || (stat_curr_speed < 0)) {
                cout << Stats->size << " " <<  Stats->oldsize << " " << timenow << " " << lastruntime << endl;
                throw;
