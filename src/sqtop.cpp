@@ -101,16 +101,16 @@ string conns_format(Options* pOpts, vector<SQUID_Connection> conns) {
    if (pOpts->compactsameurls)
       sqstat::CompactSameUrls(conns);
 
-   for (vector<SQUID_Connection>::iterator it = conns.begin(); it != conns.end(); ++it) {
-      if (((pOpts->Hosts.size() == 0) || Utils::IPMemberOf(pOpts->Hosts, it->peer)) &&
-         ((pOpts->Users.size() == 0) || Utils::UserMemberOf(pOpts->Users, it->usernames))) {
+   for (auto & elem : conns) {
+      if (((pOpts->Hosts.size() == 0) || Utils::IPMemberOf(pOpts->Hosts, elem.peer)) &&
+         ((pOpts->Users.size() == 0) || Utils::UserMemberOf(pOpts->Users, elem.usernames))) {
 
-         result << sqstat::ConnFormat(pOpts, *it);
+         result << sqstat::ConnFormat(pOpts, elem);
 
          if (not pOpts->brief) {
             result << endl;
-            for (vector<Uri_Stats>::iterator itu = it->stats.begin(); itu != it->stats.end(); ++itu) {
-               result << sqstat::StatFormat(pOpts, *it, *itu);
+            for (auto & elem_stats : elem.stats) {
+               result << sqstat::StatFormat(pOpts, elem, elem_stats);
                result << endl;
             }
          }
