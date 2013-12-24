@@ -3,9 +3,7 @@
  * Released under the GNU GPL, see the COPYING file in the source distribution for its full text.
  */
 
-#ifdef ENABLE_UI
-#include <pthread.h>
-#endif
+#include "config.h"
 
 //sleep
 #include <unistd.h>
@@ -15,7 +13,9 @@
 //stringstream
 #include <sstream>
 
-#include "config.h"
+#ifdef ENABLE_UI
+#include <pthread.h>
+#endif
 
 #include "strings.hpp"
 #include "Utils.hpp"
