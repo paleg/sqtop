@@ -2,6 +2,7 @@ AC_PREREQ([2.64])
 AC_INIT([sqtop], [2013-12-17], [o.palij@gmail.com])
 
 AC_CONFIG_AUX_DIR(cfgaux)
+m4_include([cfgaux/ax_lib_socket_nsl.m4])
 
 AC_CONFIG_SRCDIR([src/sqtop.cpp])
 AC_CONFIG_HEADERS([src/config.h])
@@ -46,6 +47,7 @@ AC_CHECK_HEADERS([arpa/inet.h netdb.h netinet/in.h getopt.h sys/socket.h], [], [
 AC_CHECK_HEADERS([sstream iomanip algorithm iostream string vector map cstdlib cstring cerrno climits], [], [AC_MSG_ERROR([Unable to find some C++ headers]); break;])
 
 # Checks for library functions.
+AX_LIB_SOCKET_NSL
 AC_CHECK_FUNCS([gethostbyname memset socket strerror], [], [AC_MSG_ERROR([Unable to find some C functions]); break;])
 
 if test x$enable_ui = xtrue; then

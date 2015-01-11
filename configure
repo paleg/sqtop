@@ -2369,6 +2369,59 @@ ac_config_sub="$SHELL $ac_aux_dir/config.sub"  # Please don't use this var.
 ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 
+# ===========================================================================
+#     http://www.gnu.org/software/autoconf-archive/ax_lib_socket_nsl.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_LIB_SOCKET_NSL
+#
+# DESCRIPTION
+#
+#   This macro figures out what libraries are required on this platform to
+#   link sockets programs.
+#
+#   The common cases are not to need any extra libraries, or to need
+#   -lsocket and -lnsl. We need to avoid linking with libnsl unless we need
+#   it, though, since on some OSes where it isn't necessary it will totally
+#   break networking. Unisys also includes gethostbyname() in libsocket but
+#   needs libnsl for socket().
+#
+# LICENSE
+#
+#   Copyright (c) 2008 Russ Allbery <rra@stanford.edu>
+#   Copyright (c) 2008 Stepan Kasal <kasal@ucw.cz>
+#   Copyright (c) 2008 Warren Young <warren@etr-usa.com>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
+
+#serial 6
+
+# This is what autoupdate's m4 run will expand.  It fires
+# the warning (with _au_warn_XXX), outputs it into the
+# updated configure.ac (with AC_DIAGNOSE), and then outputs
+# the replacement expansion.
+
+
+# This is an auxiliary macro that is also run when
+# autoupdate runs m4.  It simply calls m4_warning, but
+# we need a wrapper so that each warning is emitted only
+# once.  We break the quoting in m4_warning's argument in
+# order to expand this macro's arguments, not AU_DEFUN's.
+
+
+# Finally, this is the expansion that is picked up by
+# autoconf.  It tells the user to run autoupdate, and
+# then outputs the replacement expansion.  We do not care
+# about autoupdate's warning because that contains
+# information on what to do *after* running autoupdate.
+
+
+
 
 
 ac_config_headers="$ac_config_headers src/config.h"
@@ -4965,6 +5018,162 @@ done
 
 
 # Checks for library functions.
+
+       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing gethostbyname" >&5
+$as_echo_n "checking for library containing gethostbyname... " >&6; }
+if ${ac_cv_search_gethostbyname+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char gethostbyname ();
+int
+main ()
+{
+return gethostbyname ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' nsl; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_search_gethostbyname=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_gethostbyname+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_gethostbyname+:} false; then :
+
+else
+  ac_cv_search_gethostbyname=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_gethostbyname" >&5
+$as_echo "$ac_cv_search_gethostbyname" >&6; }
+ac_res=$ac_cv_search_gethostbyname
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+fi
+
+       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing socket" >&5
+$as_echo_n "checking for library containing socket... " >&6; }
+if ${ac_cv_search_socket+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char socket ();
+int
+main ()
+{
+return socket ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' socket; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_search_socket=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_socket+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_socket+:} false; then :
+
+else
+  ac_cv_search_socket=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_socket" >&5
+$as_echo "$ac_cv_search_socket" >&6; }
+ac_res=$ac_cv_search_socket
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+else
+
+               { $as_echo "$as_me:${as_lineno-$LINENO}: checking for socket in -lsocket" >&5
+$as_echo_n "checking for socket in -lsocket... " >&6; }
+if ${ac_cv_lib_socket_socket+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lsocket -lnsl $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char socket ();
+int
+main ()
+{
+return socket ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_lib_socket_socket=yes
+else
+  ac_cv_lib_socket_socket=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_socket_socket" >&5
+$as_echo "$ac_cv_lib_socket_socket" >&6; }
+if test "x$ac_cv_lib_socket_socket" = xyes; then :
+  LIBS="-lsocket -lnsl $LIBS"
+fi
+
+fi
+
+
 for ac_func in gethostbyname memset socket strerror
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
