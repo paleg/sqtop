@@ -93,6 +93,9 @@
 /* Define to 1 if you have the <ncurses.h> header file. */
 #undef HAVE_NCURSES_H
 
+/* Define to 1 if you have the <ncurses/ncurses.h> header file. */
+#undef HAVE_NCURSES_NCURSES_H
+
 /* Define to 1 if you have the <netdb.h> header file. */
 #undef HAVE_NETDB_H
 
@@ -176,6 +179,9 @@
 
 /* Define to 1 if you have the <vector> header file. */
 #undef HAVE_VECTOR
+
+/* Look for ncurses headers in subdir */
+#undef NCURSES_IN_SUBDIR
 
 /* Name of package */
 #undef PACKAGE

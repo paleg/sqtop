@@ -4,7 +4,6 @@
  * Released under the GNU GPL, see the COPYING file in the source distribution for its full text.
  */
 
-#include <ncurses.h>
 #include <pthread.h>
 //stringstream
 #include <sstream>
@@ -16,6 +15,12 @@
 #include "ncui.hpp"
 #include "Utils.hpp"
 #include "strings.hpp"
+
+#ifdef NCURSES_IN_SUBDIR
+    #include <ncurses/ncurses.h>
+#else
+    #include <ncurses.h>
+#endif
 
 namespace sqtop {
 

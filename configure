@@ -5199,7 +5199,26 @@ if test "x$ac_cv_header_ncurses_h" = xyes; then :
 _ACEOF
 
 else
+
+            for ac_header in ncurses/ncurses.h
+do :
+  ac_fn_cxx_check_header_mongrel "$LINENO" "ncurses/ncurses.h" "ac_cv_header_ncurses_ncurses_h" "$ac_includes_default"
+if test "x$ac_cv_header_ncurses_ncurses_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_NCURSES_NCURSES_H 1
+_ACEOF
+
+
+$as_echo "#define NCURSES_IN_SUBDIR ncurses/" >>confdefs.h
+
+
+else
   as_fn_error $? "Unable to find the ncurses headers" "$LINENO" 5; break;
+fi
+
+done
+
+
 fi
 
 done

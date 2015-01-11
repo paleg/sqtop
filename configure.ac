@@ -51,7 +51,11 @@ AX_LIB_SOCKET_NSL
 AC_CHECK_FUNCS([gethostbyname memset socket strerror], [], [AC_MSG_ERROR([Unable to find some C functions]); break;])
 
 if test x$enable_ui = xtrue; then
-   AC_CHECK_HEADERS([ncurses.h], [], [AC_MSG_ERROR([Unable to find the ncurses headers]); break;])
+   AC_CHECK_HEADERS(ncurses.h, [], [
+            AC_CHECK_HEADERS(ncurses/ncurses.h, [
+                AC_DEFINE([NCURSES_IN_SUBDIR], [ncurses/], [Look for ncurses headers in subdir])
+            ], [AC_MSG_ERROR([Unable to find the ncurses headers]); break;])
+        ])
    AC_CHECK_HEADERS([pthread.h csignal], [], [AC_MSG_ERROR([Unable to find the threading headers]); break;])
    AC_CHECK_LIB([ncurses], [initscr], [], [AC_MSG_ERROR([Unable to find the ncurses library]); break;])
    AC_CHECK_LIB([pthread], [pthread_create], [], [AC_MSG_ERROR([Unable to find the pthread library]); break;])
