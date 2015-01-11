@@ -48,6 +48,7 @@ AC_CHECK_HEADERS([sstream iomanip algorithm iostream string vector map cstdlib c
 
 # Checks for library functions.
 AX_LIB_SOCKET_NSL
+AC_SEARCH_LIBS([hstrerror], [resolv])
 AC_CHECK_FUNCS([gethostbyname memset socket strerror], [], [AC_MSG_ERROR([Unable to find some C functions]); break;])
 
 if test x$enable_ui = xtrue; then
