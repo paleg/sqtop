@@ -51,17 +51,17 @@ AX_LIB_SOCKET_NSL
 AC_SEARCH_LIBS([hstrerror], [resolv])
 AC_CHECK_FUNCS([gethostbyname memset socket strerror], [], [AC_MSG_ERROR([Unable to find some C functions]); break;])
 
+test_pthread=no
+
 if test x$enable_ui = xtrue; then
    AC_CHECK_HEADERS(ncurses.h, [], [
             AC_CHECK_HEADERS(ncurses/ncurses.h, [
                 AC_DEFINE([NCURSES_IN_SUBDIR], [ncurses/], [Look for ncurses headers in subdir])
             ], [AC_MSG_ERROR([Unable to find the ncurses headers]); break;])
         ])
-   AC_CHECK_HEADERS([pthread.h csignal], [], [AC_MSG_ERROR([Unable to find the threading headers]); break;])
    AC_CHECK_LIB([ncurses], [initscr], [], [AC_MSG_ERROR([Unable to find the ncurses library]); break;])
-   AC_CHECK_LIB([pthread], [pthread_create], [], [AC_MSG_ERROR([Unable to find the pthread library]); break;])
-   AC_CHECK_FUNCS([pthread_mutex_lock pthread_mutexattr_init pthread_mutexattr_settype pthread_mutex_init pthread_mutexattr_destroy pthread_mutex_destroy pthread_mutex_unlock pthread_create pthread_cancel], [], [AC_MSG_ERROR([Unable to find some pthread functions]); break;])
    AC_CHECK_FUNCS([clear refresh endwin mvaddstr mvchgat mvhline getch beep initscr nonl keypad noecho cbreak halfdelay addnstr], [], [AC_MSG_ERROR([Unable to find some ncurses functions]); break;])
+   test_pthread=yes
 fi
 
 if test x$resolver != xno; then
@@ -129,8 +129,16 @@ if test x$resolver != xno; then
    else
       AC_DEFINE(WITH_RESOLVER, 1, [use name resolution])
    fi
+
+   test_pthread=yes
 fi
 AM_CONDITIONAL(WITH_RESOLVER, test x$resover != xno)
+
+if test x$test_pthread = xyes; then
+   AC_CHECK_HEADERS([pthread.h csignal], [], [AC_MSG_ERROR([Unable to find the threading headers]); break;])
+   AC_CHECK_LIB([pthread], [pthread_create], [], [AC_MSG_ERROR([Unable to find the pthread library]); break;])
+   AC_CHECK_FUNCS([pthread_mutex_lock pthread_mutexattr_init pthread_mutexattr_settype pthread_mutex_init pthread_mutexattr_destroy pthread_mutex_destroy pthread_mutex_unlock pthread_create pthread_cancel], [], [AC_MSG_ERROR([Unable to find some pthread functions]); break;])
+fi
 
 AC_CONFIG_FILES([Makefile src/Makefile doc/Makefile])
 AC_OUTPUT

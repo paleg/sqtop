@@ -14,6 +14,8 @@
 #include <unistd.h>
 #include <errno.h>
 
+#include <pthread.h>
+
 #include "resolver.hpp"
 
 using std::cout;
