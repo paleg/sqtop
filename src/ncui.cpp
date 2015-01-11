@@ -288,8 +288,9 @@ bool SearchString(Options* pOpts, SQUID_Connection scon, string search_string) {
    bool ret = false;
    if (!search_string.empty()) {
       bool in_host = false;
-      bool in_name = (scon.hostname.find(search_string) != string::npos);
       bool in_ip = (scon.peer.find(search_string) != string::npos);
+#ifdef WITH_RESOLVER
+      bool in_name = (scon.hostname.find(search_string) != string::npos);
       switch (pOpts->resolve_mode) {
          case Options::SHOW_NAME:
             in_host = in_name;
@@ -301,6 +302,9 @@ bool SearchString(Options* pOpts, SQUID_Connection scon, string search_string) {
             in_host = (in_name || in_ip);
             break;
       };
+#else
+      in_host = in_ip;
+#endif
       bool in_users = Utils::VectorFindSubstr(scon.usernames, search_string);
       ret = (in_host || in_users);
    }
