@@ -5592,7 +5592,7 @@ $as_echo "#define WITH_RESOLVER 1" >>confdefs.h
 
    test_pthread=yes
 fi
- if test x$resover != xno; then
+ if test x$resolver != xno; then
   WITH_RESOLVER_TRUE=
   WITH_RESOLVER_FALSE='#'
 else

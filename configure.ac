@@ -132,7 +132,7 @@ if test x$resolver != xno; then
 
    test_pthread=yes
 fi
-AM_CONDITIONAL(WITH_RESOLVER, test x$resover != xno)
+AM_CONDITIONAL(WITH_RESOLVER, test x$resolver != xno)
 
 if test x$test_pthread = xyes; then
    AC_CHECK_HEADERS([pthread.h csignal], [], [AC_MSG_ERROR([Unable to find the threading headers]); break;])
