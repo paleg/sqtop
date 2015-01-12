@@ -398,8 +398,6 @@ vector<formattedline_t> ncui::FormatConnections(vector<SQUID_Connection> conns, 
       result.pop_back();
    if (selected_index > result.size() - 1) {
       selected_index = result.size() - 1;
-   } else if (selected_index < 0) {
-      selected_index = 0;
    }
    if (result.size() > 0)
       result[selected_index].highlighted = true;
@@ -464,7 +462,7 @@ void ncui::Print() {
    // or print some info
    } else {
       header_r << "Connected to " << pGlobalOpts->host << ":" << pGlobalOpts->port;
-      header_l << PACKAGE_NAME << "-" << VERSION << " " << copyright;
+      header_l << PACKAGE_NAME << "-" << VERSION;
       mvaddstr(0, 0, header_r.str().c_str());
       mvaddstr(0, COLS-header_l.str().size(), header_l.str().c_str());
    }

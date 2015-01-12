@@ -35,7 +35,7 @@ static struct option longopts[] = {
    { "hosts",              required_argument,   NULL,    'H' },
    { "users",              required_argument,   NULL,    'u' },
    { "pass",               required_argument,   NULL,    'P' },
-   { "help",               no_argument,         NULL,    NULL},
+   { "help",               no_argument,         NULL,     0  },
    { "brief",              no_argument,         NULL,    'b' },
    { "full",               no_argument,         NULL,    'f' },
    { "zero",               no_argument,         NULL,    'z' },
@@ -54,7 +54,7 @@ static struct option longopts[] = {
 
 void usage(char* argv) {
    cout << title << endl;
-   cout << "version " << VERSION << " " << copyright << "(" << contacts << ")" << endl;
+   cout << "version " << VERSION << " " << copyright << " (" << contacts << ")" << endl;
    cout << endl;
    cout << "Usage:";
    cout << "\n" << argv << " [--help] [--host host] [--port port] [--pass password] [--hosts host1,host...] [--users user1,user2] [--brief] [--detail] [--full] [--zero] [-c]";
