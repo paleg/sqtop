@@ -230,15 +230,21 @@ string Resolver::ResolveSync(string ip) {
    struct hostent* hp;
    size_t hstbuflen = 1024;
    char* tmphstbuf;
-   int res;
+   int res = 0;
    int herr;
    bool error;
 
    tmphstbuf = (char*) malloc(hstbuflen);
    if (!tmphstbuf) abort();
+#ifdef GETHOSTBYADDR_R_RETURNS_INT
    while ((res = gethostbyaddr_r((const void*)addr, sizeof addr, AF_INET,
                                  &hostbuf, tmphstbuf, hstbuflen,
                                  &hp, &herr)) == ERANGE) {
+#else
+   while ((hp = gethostbyaddr_r((char*)addr, sizeof addr, AF_INET,
+                           &hostbuf, tmphstbuf, hstbuflen, &herr)) == NULL
+            && errno == ERANGE) {
+#endif
        /* Enlarge the buffer.  */
        hstbuflen *= 2;
        tmphstbuf = (char*) realloc(tmphstbuf, hstbuflen);

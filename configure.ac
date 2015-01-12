@@ -64,6 +64,7 @@ if test x$enable_ui = xtrue; then
    test_pthread=yes
 fi
 
+dnl From iftop's configure.in:
 if test x$resolver != xno; then
    specified_resolver=$resolver
    if test x$resolver = xguess; then
@@ -76,6 +77,58 @@ if test x$resolver != xno; then
          dnl They wanted gethostbyaddr_r, but they can't have it, so stop.
          AC_MSG_ERROR([no library defines gethostbyaddr_r])
       fi
+   fi
+
+   dnl We still might do gethostbyaddr_r.  Figure out whether we have
+   dnl glibc-style or Solaris-style gethostbyaddr_r (or neither...).
+   dnl Separate determining how to call gethostbyaddr_r from testing
+   dnl whether it works so we can support cross-compilation.
+   if test x$resolver = xnetdb ; then
+       AC_MSG_CHECKING([how to call gethostbyaddr_r])
+       dnl Try 7 arguments returning a struct hostent*.
+       AC_LINK_IFELSE([AC_LANG_SOURCE([`cat cfgaux/hostentp_ghba_r.c`])],
+                      [AC_MSG_RESULT([7 args])
+                       ghba_args=7
+                       AC_DEFINE(GETHOSTBYADDR_R_RETURNS_HOSTENT_P, 1,
+                       [7-argument gethostbyaddr_r returns struct hostent*])],
+                      [dnl Try 8 arguments returning an int.
+                       AC_LINK_IFELSE([AC_LANG_SOURCE([`cat cfgaux/int_ghba_r.c`])],
+                                      [AC_MSG_RESULT([8 args, int return])
+                                       ghba_args=8
+                                       AC_DEFINE(GETHOSTBYADDR_R_RETURNS_INT, 1,
+                                       [8-argument gethostbyaddr_r returns int])],
+                                      [dnl Neither.
+                                       AC_MSG_RESULT([don't know how])
+                                       resolver=guess])])
+
+       if test x$resolver = xguess && test x$specified_resolver != xguess ; then
+          dnl They wanted gethostbyaddr_r, but they can't have it, so stop.
+          AC_MSG_ERROR([gethostbyaddr_r has no known calling convention])
+       fi
+   fi
+
+   dnl If we still want to do gethostbyaddr_r, and we aren't
+   dnl cross-compiling, test it.
+   if test x$resolver = xnetdb ; then
+       if test x$ghba_args = x8 ; then
+          testfile=int_ghba_r
+       else
+          testfile=hostentp_ghba_r
+       fi
+       AC_MSG_CHECKING(gethostbyaddr_r usability)
+       AC_RUN_IFELSE([AC_LANG_SOURCE(`cat cfgaux/$testfile.c`)],
+                     [AC_MSG_RESULT([yes])],
+                     [AC_MSG_RESULT([no])
+                      resolver=guess],
+                     [AC_MSG_RESULT([can't test because we are cross-compiling])])
+       if test x$resolver = xguess ; then
+           if test x$specified_resolver = xguess ; then
+              AC_MSG_RESULT([gethostbyaddr_r doesn't work, so we'll try something else])
+           else
+              dnl They wanted gethostbyaddr_r, but it doesn't work, so stop.
+              AC_MSG_ERROR([gethostbyaddr_r doesn't work])
+           fi
+       fi
    fi
 
    if test x$resolver = xnetdb ; then

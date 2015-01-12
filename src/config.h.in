@@ -3,6 +3,12 @@
 /* build with ncurses user interface */
 #undef ENABLE_UI
 
+/* 7-argument gethostbyaddr_r returns struct hostent* */
+#undef GETHOSTBYADDR_R_RETURNS_HOSTENT_P
+
+/* 8-argument gethostbyaddr_r returns int */
+#undef GETHOSTBYADDR_R_RETURNS_INT
+
 /* Define to 1 if you have the `addnstr' function. */
 #undef HAVE_ADDNSTR
 

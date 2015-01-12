@@ -1987,6 +1987,48 @@ $as_echo "$ac_res" >&6; }
   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
 } # ac_fn_cxx_check_func
+
+# ac_fn_cxx_try_run LINENO
+# ------------------------
+# Try to link conftest.$ac_ext, and return whether this succeeded. Assumes
+# that executables *can* be run.
+ac_fn_cxx_try_run ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  if { { ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
+$as_echo "$ac_try_echo"; } >&5
+  (eval "$ac_link") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; } && { ac_try='./conftest$ac_exeext'
+  { { case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
+$as_echo "$ac_try_echo"; } >&5
+  (eval "$ac_try") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }; then :
+  ac_retval=0
+else
+  $as_echo "$as_me: program exited with status $ac_status" >&5
+       $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+       ac_retval=$ac_status
+fi
+  rm -rf conftest.dSYM conftest_ipa8_conftest.oo
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+  as_fn_set_status $ac_retval
+
+} # ac_fn_cxx_try_run
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -5413,6 +5455,86 @@ fi
       if test x$resolver = xguess && test x$specified_resolver != xguess ; then
                   as_fn_error $? "no library defines gethostbyaddr_r" "$LINENO" 5
       fi
+   fi
+
+               if test x$resolver = xnetdb ; then
+       { $as_echo "$as_me:${as_lineno-$LINENO}: checking how to call gethostbyaddr_r" >&5
+$as_echo_n "checking how to call gethostbyaddr_r... " >&6; }
+              cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+`cat cfgaux/hostentp_ghba_r.c`
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: 7 args" >&5
+$as_echo "7 args" >&6; }
+                       ghba_args=7
+
+$as_echo "#define GETHOSTBYADDR_R_RETURNS_HOSTENT_P 1" >>confdefs.h
+
+else
+                         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+`cat cfgaux/int_ghba_r.c`
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: 8 args, int return" >&5
+$as_echo "8 args, int return" >&6; }
+                                       ghba_args=8
+
+$as_echo "#define GETHOSTBYADDR_R_RETURNS_INT 1" >>confdefs.h
+
+else
+                                         { $as_echo "$as_me:${as_lineno-$LINENO}: result: don't know how" >&5
+$as_echo "don't know how" >&6; }
+                                       resolver=guess
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+       if test x$resolver = xguess && test x$specified_resolver != xguess ; then
+                    as_fn_error $? "gethostbyaddr_r has no known calling convention" "$LINENO" 5
+       fi
+   fi
+
+         if test x$resolver = xnetdb ; then
+       if test x$ghba_args = x8 ; then
+          testfile=int_ghba_r
+       else
+          testfile=hostentp_ghba_r
+       fi
+       { $as_echo "$as_me:${as_lineno-$LINENO}: checking gethostbyaddr_r usability" >&5
+$as_echo_n "checking gethostbyaddr_r usability... " >&6; }
+       if test "$cross_compiling" = yes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: can't test because we are cross-compiling" >&5
+$as_echo "can't test because we are cross-compiling" >&6; }
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+`cat cfgaux/$testfile.c`
+_ACEOF
+if ac_fn_cxx_try_run "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+                      resolver=guess
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+       if test x$resolver = xguess ; then
+           if test x$specified_resolver = xguess ; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: result: gethostbyaddr_r doesn't work, so we'll try something else" >&5
+$as_echo "gethostbyaddr_r doesn't work, so we'll try something else" >&6; }
+           else
+                            as_fn_error $? "gethostbyaddr_r doesn't work" "$LINENO" 5
+           fi
+       fi
    fi
 
    if test x$resolver = xnetdb ; then
