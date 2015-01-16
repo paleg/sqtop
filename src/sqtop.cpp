@@ -29,6 +29,8 @@ using std::vector;
 
 using namespace sqtop;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wwrite-strings"
 static struct option longopts[] = {
    { "host",               required_argument,   NULL,    'h' },
    { "port",               required_argument,   NULL,    'p' },
@@ -51,6 +53,7 @@ static struct option longopts[] = {
 #endif
    { NULL,                 0,                   NULL,     0 }
 };
+#pragma GCC diagnostic pop
 
 void usage(char* argv) {
    cout << title << endl;
