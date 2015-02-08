@@ -1,5 +1,5 @@
 AC_PREREQ([2.64])
-AC_INIT([sqtop], [2013-12-17], [o.palij@gmail.com])
+AC_INIT([sqtop], [2015-02-08], [o.palij@gmail.com])
 
 AC_CONFIG_AUX_DIR(cfgaux)
 m4_include([cfgaux/ax_lib_socket_nsl.m4])
