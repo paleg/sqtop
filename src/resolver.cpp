@@ -248,7 +248,7 @@ string Resolver::ResolveSync(string ip) {
        /* Enlarge the buffer.  */
        hstbuflen *= 2;
        char* new_tmphstbuf;
-       new_tmphstbuf = static_cast<unsigned char *>(realloc(tmphstbuf, hstbuflen));
+       new_tmphstbuf = static_cast<char *>(realloc(tmphstbuf, hstbuflen));
        if (new_tmphstbuf == NULL) {
            free(tmphstbuf);
            throw -1;
