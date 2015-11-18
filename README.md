@@ -103,13 +103,13 @@ From directory where sqtop was built:
 ### FreeBSD
 
 ```
- cd /usr/ports/net/sqtop/ && make install
+ # cd /usr/ports/net/sqtop/ && make install
 ```
 
 ### OS X
 
 ```
-brew install sqtop
+$ brew install sqtop
 ```
 
 ## Configuration
