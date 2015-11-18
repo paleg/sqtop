@@ -11,6 +11,7 @@ Console applicaton to display information about currently active client connecti
    - [Binaries](README.md#how-to-install-sqtop-from-binaries)
     - [Debian/Ubuntu](README.md#debianubuntu)
     - [FreeBSD](README.md#freebsd)
+    - [OS X](README.md#os-x)
    - [Configuration](README.md#configuration)
      - [Squid server configuration](README.md#squid-server-configuration)
      - [Command line arguments](README.md#command-line-arguments)
@@ -97,13 +98,20 @@ From directory where sqtop was built:
 
 ### Debian/Ubuntu
 
-[Download](http://code.google.com/p/sqtop/downloads/list) appropriate deb package and install it with **dpkg**.
+[Download](https://github.com/paleg/sqtop/releases) appropriate deb package and install it with **dpkg**.
 
 ### FreeBSD
 
 ```
  cd /usr/ports/net/sqtop/ && make install
 ```
+
+### OS X
+
+```
+brew install sqtop
+```
+
 ## Configuration
 
 sqtop itself does not require any configuration. All configuration parameters can be passed while invoking sqtop, for details see [Usage](README.md#Usage)
@@ -121,7 +129,7 @@ http_access deny manager
 ```
 
 
-Note: if you use any type of authentification (ntlm, basic, etc) above mentioned lines sould be written before any http_access with authentification.# how-to use sqtop
+Note: if you use any type of authentification (ntlm, basic, etc) above mentioned lines sould be written before any http_access with authentification.
 
 ### Command line arguments
 
