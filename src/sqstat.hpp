@@ -23,14 +23,15 @@ struct Uri_Stats {
    std::string uri;
    long long oldsize; // to calculate current speed, while using ncui
    long long size;
+   long oldetime; // to calculate current speed, while using ncui
    long etime;
    long av_speed;
    long curr_speed;
    int delay_pool;
    std::string username;
    // TODO: Uri_Stats() : Uri_Stats("") {};
-   Uri_Stats() : id(""), count(0), uri(""), oldsize(0), size(0), etime(0), delay_pool(-1), username("") {};
-   Uri_Stats(std::string id) : id(id), count(0), uri(""), oldsize(0), size(0), etime(0), delay_pool(-1), username("") {};
+   Uri_Stats() : id(""), count(0), uri(""), oldsize(0), size(0), oldetime(0), etime(0), delay_pool(-1), username("") {};
+   Uri_Stats(std::string id) : id(id), count(0), uri(""), oldsize(0), size(0), oldetime(0), etime(0), delay_pool(-1), username("") {};
 };
 
 struct SQUID_Connection {
@@ -45,6 +46,15 @@ struct SQUID_Connection {
    std::vector<Uri_Stats> stats;
    std::vector<std::string> usernames;
    SQUID_Connection() : sum_size(0), max_etime(0), av_speed(0), curr_speed(0) {};
+};
+
+struct Old_Stat {
+   // out.size from previous stats
+   long long size;
+   // seconds ago from previous stats
+   long etime;
+   Old_Stat() : size(0), etime(0) {};
+   Old_Stat(long long size, long etime) : size(size), etime(etime) {};
 };
 
 #define FAILED_TO_CONNECT 1
@@ -70,7 +80,6 @@ class sqstatException: public std::exception {
 
 class sqstat {
    public:
-      sqstat();
       std::vector<SQUID_Connection> GetInfo(Options* pOpts);
 
       std::string squid_version;
@@ -101,7 +110,7 @@ class sqstat {
       std::map <std::string, SQUID_Connection> connections;
       //std::vector<SQUID_Connection> oldConnections;
       //std::map <std::string, SQUID_Connection> oldConnections;
-      std::map <std::string, int> sizes;
+      std::map <std::string, Old_Stat> old_Stats;
 
 #ifdef WITH_RESOLVER
       std::string DoResolve(Options* pOpts, std::string peer);

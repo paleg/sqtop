@@ -29,10 +29,6 @@ using std::vector;
 using std::cout;
 using std::endl;
 
-sqstat::sqstat() {
-   last_get_time = 0;
-}
-
 /* static */ bool sqstat::CompareURLs(Uri_Stats a, Uri_Stats b) {
      return a.size > b.size;
 }
@@ -293,7 +289,6 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
 
    // TODO: use milliseconds from <chrono>
    time_t time_before_get = 0, time_before_process = 0;
-   time_t time_between_get = 0;
 
    vector<string> active_requests;
 
@@ -310,7 +305,6 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
          active_requests.push_back(temp_str);
       }
       get_time = time(NULL) - time_before_get;
-      time_between_get = time_before_get - last_get_time;
    }
    catch(sqconnException &e) {
       std::stringstream error;
@@ -380,12 +374,6 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
 
             Stat_it->size = esize;
 
-            map<string, int>::iterator size_it = sizes.find(Stat_it->id);
-            // store old progress in new connection stat
-            Stat_it->oldsize = size_it != sizes.end() ? size_it->second : 0;
-            // replace old progress with new
-            sizes[Stat_it->id] = Stat_it->size;
-
             Conn_it->second.sum_size += esize;
          } else { FormatChanged(temp_str); }
       } else if (temp_str.substr(0,6) == "start ") {
@@ -395,6 +383,14 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
             Stat_it->etime = etime;
             if (etime > Conn_it->second.max_etime)
                Conn_it->second.max_etime = etime;
+
+            map<string, Old_Stat>::iterator size_it = old_Stats.find(Stat_it->id);
+            // store old progress in new connection stat
+            Stat_it->oldsize = size_it != old_Stats.end() ? size_it->second.size : 0;
+            Stat_it->oldetime = size_it != old_Stats.end() ? size_it->second.etime : 0;
+            // replace old progress with new
+            old_Stats[Stat_it->id] = Old_Stat(Stat_it->size, Stat_it->etime);
+
          } else { FormatChanged(temp_str); }
       } else if (temp_str.substr(0,11) == "delay_pool ") {
          result = Utils::SplitString(temp_str, " ");
@@ -424,22 +420,24 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
       active_conn += Conn->second.stats.size();
 
       for (vector<Uri_Stats>::iterator Stats = Conn->second.stats.begin(); Stats != Conn->second.stats.end(); ++Stats) {
-         long stat_av_speed = 0;
-         if ((Stats->size != 0) && (Stats->etime != 0))
-            stat_av_speed = Stats->size/Stats->etime;
-         Stats->av_speed = stat_av_speed;
-         Conn->second.av_speed += stat_av_speed;
-         av_speed += stat_av_speed;
-         if ((Stats->size != 0) && (Stats->oldsize != 0) && (last_get_time != 0) && (Stats->size > Stats->oldsize)) {
+         if ((Stats->size != 0) && (Stats->etime != 0)) {
+            Stats->av_speed = Stats->size/Stats->etime;
+            Conn->second.av_speed += Stats->av_speed;
+            av_speed += Stats->av_speed;
+         }
+         if ((Stats->size != 0) && (Stats->oldsize != 0) &&
+             (Stats->etime != 0) && (Stats->oldetime != 0) &&
+             (Stats->size > Stats->oldsize) &&
+             (Stats->etime > Stats->oldetime)) {
+            long time_between_get = Stats->etime - Stats->oldetime;
             if (time_between_get < 1) time_between_get = 1;
-            long stat_curr_speed = (Stats->size - Stats->oldsize) / time_between_get;
             /*if ((stat_curr_speed > 10000000) || (stat_curr_speed < 0)) {
                cout << Stats->size << " " <<  Stats->oldsize << " " << timenow << " " << last_get_time << endl;
                throw;
             }*/
-            Stats->curr_speed = stat_curr_speed;
-            Conn->second.curr_speed += stat_curr_speed;
-            curr_speed += stat_curr_speed;
+            Stats->curr_speed = (Stats->size - Stats->oldsize) / time_between_get;
+            Conn->second.curr_speed += Stats->curr_speed;
+            curr_speed += Stats->curr_speed;
          } /*else {
             Conn->curr_speed += stat_av_speed;
             curr_speed += stat_av_speed;
@@ -448,8 +446,6 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
       active_connections.push_back(Conn->second);
    }
    process_time = time(NULL) - time_before_process;
-
-   last_get_time = time_before_get;
 
    return active_connections;
 }
