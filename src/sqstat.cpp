@@ -12,6 +12,7 @@
 #include <map>
 #include <arpa/inet.h>
 #include <iostream>
+#include <unistd.h>
 
 #include "sqconn.hpp"
 #include "sqstat.hpp"
@@ -25,10 +26,11 @@ namespace sqtop {
 using std::string;
 using std::map;
 using std::vector;
+using std::cout;
 using std::endl;
 
 sqstat::sqstat() {
-   lastruntime = 0;
+   last_get_time = 0;
 }
 
 /* static */ bool sqstat::CompareURLs(Uri_Stats a, Uri_Stats b) {
@@ -272,7 +274,7 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
    long long esize;
    long etime;
 
-   int n=0, delay_pool;
+   int n=0;
 
    map <string, SQUID_Connection>::iterator Conn_it; // pointer to current peer
    vector<Uri_Stats>::iterator Stat_it; // pointer to current stat
@@ -290,8 +292,10 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
    connections.clear();
 
    // TODO: use milliseconds from <chrono>
-   time_t timenow = 0;
-   time_t timediff = 0;
+   time_t time_before_get = 0, time_before_process = 0;
+   time_t time_between_get = 0;
+
+   vector<string> active_requests;
 
    try {
       string request = "GET cache_object://localhost/active_requests HTTP/1.0\n";
@@ -299,120 +303,14 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
          string encoded = Base64::Encode("admin:" + pOpts->pass);
          request += "Authorization: Basic " + encoded + "\n";
       }
+      time_before_get = time(NULL);
       con << request;
       //Uri_Stats oldStats;
       while ((con >> temp_str) != 0) {
-         //std::cout << "IN: " << temp_str << std::endl;
-         if (connections.size()==0) {
-            if (n==0) {
-               if (temp_str != "HTTP/1.0 200 OK" && temp_str != "HTTP/1.1 200 OK") {
-                  std::stringstream error;
-                  error << "Access to squid statistic denied: " << temp_str;
-                  /*string ip;
-                  try {
-                     ip = get_ip();
-                  }
-                  catch (string) {
-                     ip = "<your_host_ip>";
-                  }*/
-                  /*error << "You must enable access to squid statistic in squid.conf by adding strings like:" << endl << endl;
-                  error << "\tacl adminhost src <admin_host_ip_here>/255.255.255.255" << endl;
-                  error << "\thttp_access allow manager adminhost" << endl;
-                  error << "\thttp_access deny manager";*/
-                  throw sqstatException(error.str(), ACCESS_DENIED);
-               } else {
-                  n=1;
-                  timenow = time(NULL);
-                  timediff = timenow - lastruntime;
-                  continue;
-               }
-            }
-         }
-
-         vector<string> result;
-         if (temp_str.substr(0,8) == "Server: ") {
-            result = Utils::SplitString(temp_str, " ");
-            if (result.size() == 2) {
-               squid_version = result[1];
-            } else { FormatChanged(temp_str); }
-         } else if (temp_str.substr(0,12) == "Connection: ") {
-            result = Utils::SplitString(temp_str, " ");
-            if (result.size() == 2) {
-               newStats = Uri_Stats(result[1]);
-            } else { FormatChanged(temp_str); }
-         } else if ((temp_str.substr(0,6) == "peer: ") or (temp_str.substr(0,8) == "remote: ")) {
-            result = Utils::SplitString(temp_str, " ");
-            if (result.size() == 2) {
-               std::pair <string, string> peer = Utils::SplitIPPort(result[1]);
-               if (!peer.first.empty()) {
-                  Conn_it = connections.find(peer.first);
-                  // if it is new peer, create new SQUID_Connection
-                  if (Conn_it == connections.end()) {
-                     SQUID_Connection connection;
-                     connection.peer = peer.first;
-#ifdef WITH_RESOLVER
-                     connection.hostname = DoResolve(pOpts, peer.first);
-#endif
-                     Conn_it = connections.insert( std::pair<string, SQUID_Connection>(peer.first, connection) ).first;
-                  }
-                  Conn_it->second.stats.push_back(newStats);
-                  Stat_it = Conn_it->second.stats.end() - 1;
-               }
-            } else { FormatChanged(temp_str); }
-         } else if (temp_str.substr(0,4) == "uri ") {
-            result = Utils::SplitString(temp_str, " ");
-            if (result.size() == 2) {
-               Stat_it->uri = result[1];
-               Stat_it->count = 1;
-               Stat_it->curr_speed = 0;
-               Stat_it->av_speed = 0;
-            } else { FormatChanged(temp_str); }
-         } else if (temp_str.substr(0,11) == "out.offset ") {
-            result = Utils::SplitString(temp_str, " ");
-            if (result.size() == 4) {
-               esize = atoll(result[3].c_str());
-
-               Stat_it->size = esize;
-
-               map<string, int>::iterator size_it = sizes.find(Stat_it->id);
-               // store old progress in new connection stat
-               Stat_it->oldsize = size_it != sizes.end() ? size_it->second : 0;
-               // replace old progress with new
-               size_it->second = Stat_it->size;
-
-               Conn_it->second.sum_size += esize;
-            } else { FormatChanged(temp_str); }
-         } else if (temp_str.substr(0,6) == "start ") {
-            result = Utils::SplitString(temp_str, " ");
-            if (result.size() == 5) {
-               string temp = result[2].erase(0,1);
-               etime = atoi(temp.c_str());
-               Stat_it->etime = etime;
-               if (etime > Conn_it->second.max_etime)
-                  Conn_it->second.max_etime = etime;
-            } else { FormatChanged(temp_str); }
-         } else if (temp_str.substr(0,11) == "delay_pool ") {
-            result = Utils::SplitString(temp_str, " ");
-            if (result.size() == 2) {
-               string temp = result[1];
-               delay_pool = atoi(temp.c_str());
-               Stat_it->delay_pool = delay_pool;
-            } else { FormatChanged(temp_str); }
-         } else if (temp_str.substr(0,9) == "username ") {
-            result = Utils::SplitString(temp_str, " ");
-            if (result.size() == 1)
-               result.push_back("-");
-            if (result.size() == 2) {
-               string username = result[1];
-               if (!(username == "-")) {
-                  Utils::ToLower(username);
-                  Stat_it->username = username;
-                  if (!Utils::MemberOf(Conn_it->second.usernames, username))
-                     Conn_it->second.usernames.push_back(username);
-               }
-            } else { FormatChanged(temp_str); }
-         }
+         active_requests.push_back(temp_str);
       }
+      get_time = time(NULL) - time_before_get;
+      time_between_get = time_before_get - last_get_time;
    }
    catch(sqconnException &e) {
       std::stringstream error;
@@ -420,14 +318,109 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
       throw sqstatException(error.str(), UNKNOWN_ERROR);
    }
 
-   vector<SQUID_Connection> result;
+   time_before_process = time(NULL);
+   for (vector<string>::iterator it = active_requests.begin(); it != active_requests.end(); ++it) {
+      temp_str = *it;
+      //std::cout << "IN: " << temp_str << std::endl;
+      if (connections.size()==0) {
+         if (n==0) {
+            if (temp_str != "HTTP/1.0 200 OK" && temp_str != "HTTP/1.1 200 OK") {
+               std::stringstream error;
+               error << "Access to squid statistic denied: " << temp_str;
+               throw sqstatException(error.str(), ACCESS_DENIED);
+            } else {
+               n=1;
+               continue;
+            }
+         }
+      }
+
+      vector<string> result;
+      if (temp_str.substr(0,8) == "Server: ") {
+         result = Utils::SplitString(temp_str, " ");
+         if (result.size() == 2) {
+            squid_version = result[1];
+         } else { FormatChanged(temp_str); }
+      } else if (temp_str.substr(0,12) == "Connection: ") {
+         result = Utils::SplitString(temp_str, " ");
+         if (result.size() == 2) {
+            newStats = Uri_Stats(result[1]);
+         } else { FormatChanged(temp_str); }
+      } else if ((temp_str.substr(0,6) == "peer: ") or (temp_str.substr(0,8) == "remote: ")) {
+         result = Utils::SplitString(temp_str, " ");
+         if (result.size() == 2) {
+            std::pair <string, string> peer = Utils::SplitIPPort(result[1]);
+            if (!peer.first.empty()) {
+               Conn_it = connections.find(peer.first);
+               // if it is new peer, create new SQUID_Connection
+               if (Conn_it == connections.end()) {
+                  SQUID_Connection connection;
+                  connection.peer = peer.first;
+#ifdef WITH_RESOLVER
+                     connection.hostname = DoResolve(pOpts, peer.first);
+#endif
+                  Conn_it = connections.insert( std::pair<string, SQUID_Connection>(peer.first, connection) ).first;
+               }
+               Conn_it->second.stats.push_back(newStats);
+               Stat_it = Conn_it->second.stats.end() - 1;
+            }
+         } else { FormatChanged(temp_str); }
+      } else if (temp_str.substr(0,4) == "uri ") {
+         result = Utils::SplitString(temp_str, " ");
+         if (result.size() == 2) {
+            Stat_it->uri = result[1];
+            Stat_it->count = 1;
+            Stat_it->curr_speed = 0;
+            Stat_it->av_speed = 0;
+         } else { FormatChanged(temp_str); }
+      } else if (temp_str.substr(0,11) == "out.offset ") {
+         result = Utils::SplitString(temp_str, " ");
+         if (result.size() == 4) {
+            esize = atoll(result[3].c_str());
+
+            Stat_it->size = esize;
+
+            map<string, int>::iterator size_it = sizes.find(Stat_it->id);
+            // store old progress in new connection stat
+            Stat_it->oldsize = size_it != sizes.end() ? size_it->second : 0;
+            // replace old progress with new
+            sizes[Stat_it->id] = Stat_it->size;
+
+            Conn_it->second.sum_size += esize;
+         } else { FormatChanged(temp_str); }
+      } else if (temp_str.substr(0,6) == "start ") {
+         result = Utils::SplitString(temp_str, " ");
+         if (result.size() == 5) {
+            etime = atoi(result[2].erase(0,1).c_str());
+            Stat_it->etime = etime;
+            if (etime > Conn_it->second.max_etime)
+               Conn_it->second.max_etime = etime;
+         } else { FormatChanged(temp_str); }
+      } else if (temp_str.substr(0,11) == "delay_pool ") {
+         result = Utils::SplitString(temp_str, " ");
+         if (result.size() == 2) {
+            Stat_it->delay_pool = atoi(result[1].c_str());
+         } else { FormatChanged(temp_str); }
+      } else if (temp_str.substr(0,9) == "username ") {
+         result = Utils::SplitString(temp_str, " ");
+         if (result.size() == 1)
+            result.push_back("-");
+         if (result.size() == 2) {
+            string username = result[1];
+            if (!(username == "-")) {
+               Utils::ToLower(username);
+               Stat_it->username = username;
+               if (!Utils::MemberOf(Conn_it->second.usernames, username))
+                  Conn_it->second.usernames.push_back(username);
+            }
+         } else { FormatChanged(temp_str); }
+      }
+   }
+
+   vector<SQUID_Connection> active_connections;
    av_speed = 0;
    curr_speed = 0;
    for (map<string, SQUID_Connection>::iterator Conn = connections.begin(); Conn != connections.end(); ++Conn) {
-      result.push_back(Conn->second);
-
-      //sort(Conn->stats.begin(), Conn->stats.end(), CompareURLs);
-
       active_conn += Conn->second.stats.size();
 
       for (vector<Uri_Stats>::iterator Stats = Conn->second.stats.begin(); Stats != Conn->second.stats.end(); ++Stats) {
@@ -437,11 +430,11 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
          Stats->av_speed = stat_av_speed;
          Conn->second.av_speed += stat_av_speed;
          av_speed += stat_av_speed;
-         if ((Stats->size != 0) && (Stats->oldsize != 0) && (lastruntime != 0) && (Stats->size > Stats->oldsize)) {
-            if (timediff < 1) timediff = 1;
-            long stat_curr_speed = (Stats->size - Stats->oldsize) / timediff;
+         if ((Stats->size != 0) && (Stats->oldsize != 0) && (last_get_time != 0) && (Stats->size > Stats->oldsize)) {
+            if (time_between_get < 1) time_between_get = 1;
+            long stat_curr_speed = (Stats->size - Stats->oldsize) / time_between_get;
             /*if ((stat_curr_speed > 10000000) || (stat_curr_speed < 0)) {
-               cout << Stats->size << " " <<  Stats->oldsize << " " << timenow << " " << lastruntime << endl;
+               cout << Stats->size << " " <<  Stats->oldsize << " " << timenow << " " << last_get_time << endl;
                throw;
             }*/
             Stats->curr_speed = stat_curr_speed;
@@ -452,14 +445,13 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
             curr_speed += stat_av_speed;
          }*/
       }
+      active_connections.push_back(Conn->second);
    }
+   process_time = time(NULL) - time_before_process;
 
-   //sort(connections.begin(), connections.end(), sqstat::CompareSIZE);
+   last_get_time = time_before_get;
 
-   process_time = time(NULL) - timenow;
-   lastruntime = timenow;
-
-   return result;
+   return active_connections;
 }
 
 }

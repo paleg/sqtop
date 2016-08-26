@@ -54,6 +54,7 @@ class ncui {
       void SetActiveConnCount(int);
       void SetStat(std::vector<SQUID_Connection>);
       void SetProcessTime(time_t t);
+      void SetGetTime(time_t t);
 
    private:
       int CompactLongLine(std::string &line);
@@ -90,6 +91,7 @@ class ncui {
       long curr_speed;
       int act_conn;
       time_t process_time;
+      time_t get_time;
       std::vector<SQUID_Connection> sqconns;
 
       std::string helphintmsg;

@@ -75,7 +75,8 @@ class sqstat {
 
       std::string squid_version;
       int active_conn;
-      size_t process_time;
+      time_t process_time;
+      time_t get_time;
       long av_speed;
       long curr_speed;
 
@@ -106,7 +107,7 @@ class sqstat {
       std::string DoResolve(Options* pOpts, std::string peer);
 #endif
 
-      time_t lastruntime;
+      time_t last_get_time;
 
       void FormatChanged(std::string line);
       //std::vector<SQUID_Connection>::iterator FindConnByPeer(std::string Host);

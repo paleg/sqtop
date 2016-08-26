@@ -166,6 +166,10 @@ void ncui::SetProcessTime(time_t t) {
    process_time = t;
 }
 
+void ncui::SetGetTime(time_t t) {
+   get_time = t;
+}
+
 void ncui::SetStat(std::vector<SQUID_Connection> stat) {
    sqconns = stat;
 }
@@ -543,7 +547,8 @@ void ncui::Print() {
    status << speed << "\t\t";
    status << "Active hosts: " << sqconns.size() << "\t\t";
    status << "Active connections: " << act_conn << "\t\t";
-   status << "Process time: " << process_time << "\t\t";
+   //status << "Get time: " << get_time << "\t\t";
+   //status << "Process time: " << process_time << "\t\t";
 
    mvhline(max_y-1, 0, 0, COLS);
 

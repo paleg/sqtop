@@ -141,6 +141,7 @@ void squid_loop(void* threadarg) {
             pArgs->ui->SetSpeeds(sqs.av_speed, sqs.curr_speed);
             pArgs->ui->SetActiveConnCount(sqs.active_conn);
             pArgs->ui->SetProcessTime(sqs.process_time);
+            pArgs->ui->SetGetTime(sqs.get_time);
             pArgs->ui->SetStat(stat);
          }
          catch (sqstatException &e) {
