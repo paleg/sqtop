@@ -28,7 +28,9 @@ struct Uri_Stats {
    long curr_speed;
    int delay_pool;
    std::string username;
+   // TODO: Uri_Stats() : Uri_Stats("") {};
    Uri_Stats() : id(""), count(0), uri(""), oldsize(0), size(0), etime(0), delay_pool(-1), username("") {};
+   Uri_Stats(std::string id) : id(id), count(0), uri(""), oldsize(0), size(0), etime(0), delay_pool(-1), username("") {};
 };
 
 struct SQUID_Connection {
@@ -73,6 +75,7 @@ class sqstat {
 
       std::string squid_version;
       int active_conn;
+      size_t process_time;
       long av_speed;
       long curr_speed;
 
@@ -93,8 +96,11 @@ class sqstat {
       static bool CompareCURRSPEED(SQUID_Connection a, SQUID_Connection b);
 
    private:
-      std::vector<SQUID_Connection> connections;
-      std::vector<SQUID_Connection> oldConnections;
+      //std::vector<SQUID_Connection> connections;
+      std::map <std::string, SQUID_Connection> connections;
+      //std::vector<SQUID_Connection> oldConnections;
+      //std::map <std::string, SQUID_Connection> oldConnections;
+      std::map <std::string, int> sizes;
 
 #ifdef WITH_RESOLVER
       std::string DoResolve(Options* pOpts, std::string peer);

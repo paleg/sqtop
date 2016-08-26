@@ -42,6 +42,7 @@ static struct option longopts[] = {
    { "full",               no_argument,         NULL,    'f' },
    { "zero",               no_argument,         NULL,    'z' },
    { "detail",             no_argument,         NULL,    'd' },
+   // TODO: strip domain
 #ifdef ENABLE_UI
    { "once",               no_argument,         NULL,    'o' },
    { "refreshinterval",    required_argument,   NULL,    'r' },
@@ -139,6 +140,7 @@ void squid_loop(void* threadarg) {
             pArgs->ui->ClearError();
             pArgs->ui->SetSpeeds(sqs.av_speed, sqs.curr_speed);
             pArgs->ui->SetActiveConnCount(sqs.active_conn);
+            pArgs->ui->SetProcessTime(sqs.process_time);
             pArgs->ui->SetStat(stat);
          }
          catch (sqstatException &e) {
