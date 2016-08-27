@@ -18,7 +18,7 @@ namespace Utils {
    extern long int stol(std::string s);
    extern std::string ftos(double num, int prec);
    extern std::string StripUserDomain(std::string user);
-   extern std::string UsernamesToStr(std::set<std::string>* in);
+   extern std::string UsernamesToStr(std::set<std::string>& in);
    extern std::string ConvertTime(long etime);
    extern std::string ConvertSize(long long esize);
    extern std::pair <std::string, std::string> ConvertSpeedPair(long long speed);

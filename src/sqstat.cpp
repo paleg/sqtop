@@ -134,23 +134,15 @@ using std::endl;
    result << scon.peer;
 #endif
    if (!scon.usernames.empty()) {
-      set<string> *users;
+      set<string> users;
       if (pOpts->strip_user_domain) {
-         set<string> stripped_users;
          for (set<string>::iterator it = scon.usernames.begin(); it != scon.usernames.end(); ++it) {
-            stripped_users.insert(Utils::StripUserDomain(*it));
+            users.insert(Utils::StripUserDomain(*it));
          }
-         users = &stripped_users;
       } else {
-         users = &scon.usernames;
+         users = scon.usernames;
       }
-      string head;
-      if (users->size() == 1) {
-         head = "User: ";
-      } else {
-         head = "Users: ";
-      }
-      result << "; " + head << Utils::UsernamesToStr(users);
+      result << "; " << (users.size() == 1 ? "User: " : "Users: ") << Utils::UsernamesToStr(users);
    }
 
    string condetail="";

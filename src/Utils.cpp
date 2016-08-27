@@ -96,9 +96,9 @@ string Utils::StripUserDomain(string user) {
    return user;
 }
 
-string Utils::UsernamesToStr(set<string>* in) {
+string Utils::UsernamesToStr(set<string>& in) {
    string result = "";
-   for (set<string>::iterator it = in->begin(); it != in->end(); ++it) {
+   for (set<string>::iterator it = in.begin(); it != in.end(); ++it) {
         result += *it + ", ";
    }
    result.resize(result.size()-2);
