@@ -23,7 +23,7 @@ namespace Utils {
    extern std::string ConvertSize(long long esize);
    extern std::pair <std::string, std::string> ConvertSpeedPair(long long speed);
    extern std::string ConvertSpeed(long long speed);
-   template<typename T> extern bool MemberOf(T& v, const std::string& str);
+   extern bool MemberOf(std::vector<std::string>& v, const std::string& str);
    extern void VectorDeleteStr(std::vector<std::string>& v, std::string& str);
    extern bool SetFindSubstr(std::set<std::string>& v, const std::string& str);
    extern bool IPMemberOf(std::vector<std::string>& v, std::string& ip_in);

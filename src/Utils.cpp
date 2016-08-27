@@ -165,8 +165,7 @@ bool Utils::SetFindSubstr(set<string>& v, const string& str) {
    return false;
 }
 
-template<typename T>
-bool Utils::MemberOf(T& v, const string& str) {
+bool Utils::MemberOf(vector<string>& v, const string& str) {
      return find(v.begin(), v.end(), str) != v.end();
 }
 
