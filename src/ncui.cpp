@@ -197,6 +197,7 @@ string ncui::helpmsg() {
    ss << " b - " << brief_help << " " << b2s(pGlobalOpts->brief) << endl;
    ss << " C - compact long urls to fit one line" << " " << b2s(pGlobalOpts->compactlongurls) << endl;
    ss << " c - " << compact_same_help << " " << b2s(pGlobalOpts->compactsameurls) << endl;
+   ss << " Z - " << strip_user_domain_help << " " << b2s(pGlobalOpts->strip_user_domain) << endl;
    ss << " s - " << "speed showing mode (" << pGlobalOpts->speed_mode << ")" << endl;
    ss << " o - " << "connections sort order (" << pGlobalOpts->sort_order << ")" << endl;
    ss << " SPACE - stop refreshing " << b2s(!pGlobalOpts->do_refresh) << endl;
@@ -227,7 +228,7 @@ string ncui::helpmsg() {
                                  << pGlobalOpts->pResolver->ResolveFunc() << " in " 
                                  << pGlobalOpts->pResolver->MaxThreads() << " threads):" << endl;
    ss << " n - " << dns_resolution_help << " " << b2s(pGlobalOpts->dns_resolution) << endl;
-   ss << " S - " << strip_domain_help << " " << b2s(pGlobalOpts->strip_domain) << endl;
+   ss << " S - " << strip_host_domain_help << " " << b2s(pGlobalOpts->strip_host_domain) << endl;
    ss << " R - " << "hosts showing mode (" << pGlobalOpts->resolve_mode << ")" << endl;
    ss << endl;
 #endif
@@ -313,7 +314,7 @@ bool SearchString(Options* pOpts, SQUID_Connection scon, string search_string) {
 #else
       in_host = in_ip;
 #endif
-      bool in_users = Utils::VectorFindSubstr(scon.usernames, search_string);
+      bool in_users = Utils::SetFindSubstr(scon.usernames, search_string);
       ret = (in_host || in_users);
    }
    return ret;
@@ -676,6 +677,14 @@ void ncui::Loop() {
             }
             pGlobalOpts->compactsameurls = !pGlobalOpts->compactsameurls;
             break;
+         case 'Z':
+            if (pGlobalOpts->strip_user_domain) {
+               ShowHelpHint("Username domain part stripping OFF");
+            } else {
+               ShowHelpHint("Username domain part stripping ON");
+            }
+            pGlobalOpts->strip_user_domain = !pGlobalOpts->strip_user_domain;
+            break;
 #ifdef WITH_RESOLVER
          case 'n':
             if (pGlobalOpts->dns_resolution) {
@@ -686,12 +695,12 @@ void ncui::Loop() {
             pGlobalOpts->dns_resolution = !pGlobalOpts->dns_resolution;
             break;
          case 'S':
-            if (pGlobalOpts->strip_domain) {
+            if (pGlobalOpts->strip_host_domain) {
                ShowHelpHint("Hostname domain part stripping OFF");
             } else {
                ShowHelpHint("Hostname domain part stripping ON");
             }
-            pGlobalOpts->strip_domain = !pGlobalOpts->strip_domain;
+            pGlobalOpts->strip_host_domain = !pGlobalOpts->strip_host_domain;
             break;
 #endif
          case 's':

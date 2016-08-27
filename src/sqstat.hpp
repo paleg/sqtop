@@ -8,6 +8,7 @@
 
 #include <string>
 #include <vector>
+#include <set>
 //exception
 #include <typeinfo>
 
@@ -44,7 +45,7 @@ struct SQUID_Connection {
    long av_speed;
    long curr_speed;
    std::vector<Uri_Stats> stats;
-   std::vector<std::string> usernames;
+   std::set<std::string> usernames;
    SQUID_Connection() : sum_size(0), max_etime(0), av_speed(0), curr_speed(0) {};
 };
 

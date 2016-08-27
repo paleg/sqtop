@@ -36,6 +36,7 @@ class Options {
       bool ui;
       bool compactlongurls;
       bool compactsameurls;
+      bool strip_user_domain;
       bool freeze;
       bool do_refresh;
       int sleep_sec;
@@ -59,7 +60,7 @@ class Options {
 #ifdef WITH_RESOLVER
       Resolver* pResolver;
       bool dns_resolution;
-      bool strip_domain;
+      bool strip_host_domain;
 
       enum RESOLVE_MODE {
          SHOW_BOTH,

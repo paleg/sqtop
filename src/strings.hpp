@@ -14,6 +14,7 @@
 #define hosts_help "comma-separated list of clients (by ip[/mask]) to show"
 #define users_help "comma-separated list of clients (by login) to show"
 #define compact_same_help "compact the display of multiple occurrences of the same URL in a single connection"
+#define strip_user_domain_help "strip domain part of username"
 #define host_help "address of Squid server"
 #define port_help "port of Squid server"
 #define passwd_help "manager password"
@@ -21,7 +22,7 @@
 
 #ifdef WITH_RESOLVER
 #define dns_resolution_help "do hostname lookups"
-#define strip_domain_help "strip domain part of hostname"
+#define strip_host_domain_help "strip domain part of hostname"
 #endif
 
 #endif /* __STRINGS_H */

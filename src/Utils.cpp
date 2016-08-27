@@ -20,6 +20,7 @@
 
 using std::string;
 using std::vector;
+using std::set;
 
 vector<string> Utils::SplitString(string str, string delim) {
    vector<string> result;
@@ -82,10 +83,24 @@ string Utils::ftos(double num, int prec) {
     return (ss.str());
 }
 
-string Utils::UsernamesToStr(vector<string>& in) {
+string Utils::StripUserDomain(string user) {
+   size_t found = user.find_first_of("@");
+   if (found != string::npos) {
+      user.erase(user.begin()+found, user.end());
+   } else {
+      found = user.find_first_of("\\");
+      if (found != string::npos) {
+         user.erase(user.begin(), user.begin()+found+1);
+      }
+   }
+   return user;
+}
+
+string Utils::UsernamesToStr(set<string>* in) {
    string result = "";
-   for (vector<string>::iterator it = in.begin(); it != in.end(); ++it)
+   for (set<string>::iterator it = in->begin(); it != in->end(); ++it) {
         result += *it + ", ";
+   }
    result.resize(result.size()-2);
    return result;
 }
@@ -143,21 +158,19 @@ string Utils::ConvertSpeed(long long speed) {
    return result.first+" "+result.second;
 }
 
-bool Utils::VectorFindSubstr(vector<string>& v, string& str) {
-   for(vector<string>::iterator it = v.begin(); it != v.end(); ++it) {
+bool Utils::SetFindSubstr(set<string>& v, const string& str) {
+   for(set<string>::iterator it = v.begin(); it != v.end(); ++it) {
       if ((*it).find(str) != string::npos) return true;
    }
    return false;
 }
 
-bool Utils::MemberOf(vector<string>& v, string& str) {
-     if (find(v.begin(), v.end(), str) == v.end())
-        return false;
-     else return true;
+template<typename T>
+bool Utils::MemberOf(T& v, const string& str) {
+     return find(v.begin(), v.end(), str) != v.end();
 }
 
-void Utils::VectorDeleteStr(vector<string>& v, string& str)
-{
+void Utils::VectorDeleteStr(vector<string>& v, string& str) {
    vector<string>::iterator vItr = v.begin();
    while ( vItr != v.end() ) {
       if ( (*vItr) == str ) {
@@ -196,18 +209,16 @@ void Utils::ToLower(string& rData) {
      transform(rData.begin(), rData.end(), rData.begin(), ::tolower);
 }
 
-bool Utils::UserMemberOf(vector<string>& v, vector<string>& users) {
-     for (vector<string>::iterator it = users.begin(); it != users.end(); ++it) {
+bool Utils::UserMemberOf(vector<string>& v, set<string>& users) {
+     for (set<string>::iterator it = users.begin(); it != users.end(); ++it) {
          if (MemberOf(v, *it))
             return true;
      }
      return false;
 }
 
-string Utils::replace(string text, string s, string d)
-{
-  for(std::string::size_type index=0; index=text.find(s, index), index!=std::string::npos;)
-  {
+string Utils::replace(string text, string s, string d) {
+  for(std::string::size_type index=0; index=text.find(s, index), index!=std::string::npos;) {
     text.erase(index, s.length());
     text.insert(index, d);
     index+=d.length();

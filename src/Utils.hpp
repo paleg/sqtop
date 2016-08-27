@@ -8,6 +8,7 @@
 
 #include <string>
 #include <vector>
+#include <set>
 
 namespace Utils {
    extern std::vector<std::string> SplitString(std::string str, std::string delim);
@@ -16,17 +17,18 @@ namespace Utils {
    extern std::string itos(long long num);
    extern long int stol(std::string s);
    extern std::string ftos(double num, int prec);
-   extern std::string UsernamesToStr(std::vector<std::string>& in);
+   extern std::string StripUserDomain(std::string user);
+   extern std::string UsernamesToStr(std::set<std::string>* in);
    extern std::string ConvertTime(long etime);
    extern std::string ConvertSize(long long esize);
    extern std::pair <std::string, std::string> ConvertSpeedPair(long long speed);
    extern std::string ConvertSpeed(long long speed);
-   extern bool MemberOf(std::vector<std::string>& v, std::string& str);
+   template<typename T> extern bool MemberOf(T& v, const std::string& str);
    extern void VectorDeleteStr(std::vector<std::string>& v, std::string& str);
-   extern bool VectorFindSubstr(std::vector<std::string>& v, std::string& str);
+   extern bool SetFindSubstr(std::set<std::string>& v, const std::string& str);
    extern bool IPMemberOf(std::vector<std::string>& v, std::string& ip_in);
    extern void ToLower(std::string& rData);
-   extern bool UserMemberOf(std::vector<std::string>& v, std::vector<std::string>& users);
+   extern bool UserMemberOf(std::vector<std::string>& v, std::set<std::string>& users);
    extern std::string replace(std::string text, std::string s, std::string d);
 };
 

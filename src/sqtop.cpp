@@ -42,7 +42,7 @@ static struct option longopts[] = {
    { "full",               no_argument,         NULL,    'f' },
    { "zero",               no_argument,         NULL,    'z' },
    { "detail",             no_argument,         NULL,    'd' },
-   // TODO: strip domain
+   { NULL,                 no_argument,         NULL,    'Z' },
 #ifdef ENABLE_UI
    { "once",               no_argument,         NULL,    'o' },
    { "refreshinterval",    required_argument,   NULL,    'r' },
@@ -61,7 +61,7 @@ void usage(char* argv) {
    cout << "version " << VERSION << " " << copyright << " (" << contacts << ")" << endl;
    cout << endl;
    cout << "Usage:";
-   cout << "\n" << argv << " [--help] [--host host] [--port port] [--pass password] [--hosts host1,host...] [--users user1,user2] [--brief] [--detail] [--full] [--zero] [-c]";
+   cout << "\n" << argv << " [--help] [--host host] [--port port] [--pass password] [--hosts host1,host...] [--users user1,user2] [--brief] [--detail] [--full] [--zero] [-c] [-Z]";
 #ifdef ENABLE_UI
    cout << " [--once] [-r seconds]";
 #endif
@@ -79,13 +79,14 @@ void usage(char* argv) {
    cout << "\n\t--full   (-f)                - " << full_help << ";";
    cout << "\n\t--zero   (-z)                - " << zero_help << ";";
    cout << "\n\t-c                           - do not " << compact_same_help << ";";
+   cout << "\n\t-Z                           - do not " << strip_user_domain_help << ";";
 #ifdef ENABLE_UI
    cout << "\n\t--once   (-o)                - disable interactive mode, just print statistics once to stdout;";
    cout << "\n\t--refreshinterval (-r) sec   - " << refresh_interval_help << ";";
 #endif
 #ifdef WITH_RESOLVER
    cout << "\n\t-n                           - do not " << dns_resolution_help << ";";
-   cout << "\n\t-S                           - do not " << strip_domain_help << ".";
+   cout << "\n\t-S                           - do not " << strip_host_domain_help << ".";
 #endif
    cout << endl;
 }
@@ -231,11 +232,14 @@ int main(int argc, char **argv) {
             pOpts->dns_resolution = false;
             break;
          case 'S':
-            pOpts->strip_domain = false;
+            pOpts->strip_host_domain = false;
             break;
 #endif
          case 'c':
             pOpts->compactsameurls = false;
+            break;
+         case 'Z':
+            pOpts->strip_user_domain = false;
             break;
          default:
             usage(argv[0]);

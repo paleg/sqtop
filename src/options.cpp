@@ -18,6 +18,7 @@ Options::Options() {
    ui = true;
    compactlongurls = true;
    compactsameurls = true;
+   strip_user_domain = true;
    freeze = false;
    do_refresh = true;
    sleep_sec = 2;
@@ -27,7 +28,7 @@ Options::Options() {
 #ifdef WITH_RESOLVER
    pResolver = new Resolver();
    dns_resolution = true;
-   strip_domain = true;
+   strip_host_domain = true;
    resolve_mode = SHOW_BOTH;
 #endif
 }
@@ -49,13 +50,14 @@ void Options::CopyFrom(Options* pOrig) {
    ui = pOrig->ui;
    compactlongurls = pOrig->compactlongurls;
    compactsameurls = pOrig->compactsameurls;
+   strip_user_domain = pOrig->strip_user_domain;
    freeze = pOrig->freeze;
    sleep_sec = pOrig->sleep_sec;
    showhelp = pOrig->showhelp;
    speed_mode = pOrig->speed_mode;
    sort_order = pOrig->sort_order;
 #ifdef WITH_RESOLVER
-   strip_domain = pOrig->strip_domain;
+   strip_host_domain = pOrig->strip_host_domain;
    dns_resolution = pOrig->dns_resolution;
    resolve_mode = pOrig->resolve_mode;
 #endif

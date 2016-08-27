@@ -26,6 +26,7 @@ namespace sqtop {
 using std::string;
 using std::map;
 using std::vector;
+using std::set;
 using std::cout;
 using std::endl;
 
@@ -107,7 +108,7 @@ using std::endl;
    string resolved;
    if (pOpts->dns_resolution) {
       string tmp = scon.hostname;
-      if (pOpts->strip_domain) {
+      if (pOpts->strip_host_domain) {
          pOpts->pResolver->StripDomain(tmp);
       }
       switch (pOpts->resolve_mode) {
@@ -133,12 +134,23 @@ using std::endl;
    result << scon.peer;
 #endif
    if (!scon.usernames.empty()) {
+      set<string> *users;
+      if (pOpts->strip_user_domain) {
+         set<string> stripped_users;
+         for (set<string>::iterator it = scon.usernames.begin(); it != scon.usernames.end(); ++it) {
+            stripped_users.insert(Utils::StripUserDomain(*it));
+         }
+         users = &stripped_users;
+      } else {
+         users = &scon.usernames;
+      }
       string head;
-      if (scon.usernames.size() == 1)
+      if (users->size() == 1) {
          head = "User: ";
-      else
+      } else {
          head = "Users: ";
-      result << "; " + head << Utils::UsernamesToStr(scon.usernames);
+      }
+      result << "; " + head << Utils::UsernamesToStr(users);
    }
 
    string condetail="";
@@ -203,7 +215,7 @@ string sqstat::SpeedsFormat(Options::SPEED_MODE mode, long av_speed, long curr_s
       if (pOpts->full && ((pOpts->zero || (ustat.etime > 0))))
          udetail += "time: " + Utils::ConvertTime(ustat.etime) + ", ";
       if (scon.usernames.size() > 1)
-         udetail += "user: " + ustat.username + ", ";
+         udetail += "user: " + (pOpts->strip_user_domain ? Utils::StripUserDomain(ustat.username) : ustat.username ) + ", ";
       if (pOpts->zero || (ustat.av_speed > 103) || (ustat.curr_speed > 103))
          udetail += SpeedsFormat(pOpts->speed_mode, ustat.av_speed, ustat.curr_speed) + ", ";
       if (pOpts->full && (pOpts->zero || (ustat.delay_pool != 0)))
@@ -271,15 +283,12 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
       }
       time_before_get = time(NULL);
       con << request;
-      //Uri_Stats oldStats;
       while ((con >> line) != 0) {
          active_requests.push_back(line);
       }
       get_time = time(NULL) - time_before_get;
    } catch(sqconnException &e) {
-      std::stringstream error;
-      error << e.what();
-      throw sqstatException(error.str(), UNKNOWN_ERROR);
+      throw sqstatException(e.what(), UNKNOWN_ERROR);
    }
 
    time_before_process = time(NULL);
@@ -315,7 +324,7 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
                   SQUID_Connection connection;
                   connection.peer = peer.first;
 #ifdef WITH_RESOLVER
-                     connection.hostname = DoResolve(pOpts, peer.first);
+                  connection.hostname = DoResolve(pOpts, peer.first);
 #endif
                   Conn_it = connections.insert( std::pair<string, SQUID_Connection>(peer.first, connection) ).first;
                }
@@ -359,15 +368,13 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
          } else { FormatChanged(line); }
       } else if (line.substr(0,9) == "username ") {
          result = Utils::SplitString(line, " ");
-         if (result.size() == 1)
-            result.push_back("-");
-         if (result.size() == 2) {
-            string username = result[1];
-            if (!(username == "-")) {
-               Utils::ToLower(username);
-               Stat_it->username = username;
-               if (!Utils::MemberOf(Conn_it->second.usernames, username))
-                  Conn_it->second.usernames.push_back(username);
+         if (result.size() == 1) {
+            continue;
+         } else if (result.size() == 2) {
+            if ((result[1] != "-") && (!result[1].empty())) {
+               Stat_it->username = result[1];
+               Utils::ToLower(Stat_it->username);
+               Conn_it->second.usernames.insert(Stat_it->username);
             }
          } else { FormatChanged(line); }
       }
