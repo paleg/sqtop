@@ -171,6 +171,9 @@ Note: if you use any type of authentification (ntlm, basic, etc) above mentioned
      -c
              Do not compact the display of multiple occurrences of the same URL in a single connection.
 
+     -Z
+             Do not strip domain part of username.
+
      -n
              Do not do hostname lookups.
 
