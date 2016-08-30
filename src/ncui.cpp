@@ -255,27 +255,6 @@ vector<SquidConnection> ncui::FilterConns(vector<SquidConnection> in) {
    return in;
 }
 
-formattedline_t ncui::MakeResult(string str, int y, int coef, SquidConnection sconn, string id) {
-   formattedline_t t;
-   t.str = str;
-   t.y = y;
-   t.coef = coef;
-   t.sconn = sconn;
-   t.id = id;
-   t.new_line = false;
-   t.highlighted = false;
-   return t;
-}
-
-formattedline_t ncui::MakeNewLine(int y) {
-   formattedline_t t;
-   t.new_line = true;
-   t.y = y;
-   t.coef = 1;
-   t.highlighted = false;
-   return t;
-}
-
 bool SearchString(Options* pOpts, SquidConnection scon, string search_string) {
    bool ret = false;
    if (!search_string.empty()) {
@@ -338,7 +317,7 @@ vector<formattedline_t> ncui::FormatConnections(vector<SquidConnection> conns, i
       }
       string header_str = sqstat::ConnFormat(pOpts, scon);
       coef = CompactLongLine(header_str);
-      result.push_back(MakeResult(header_str, y, coef, scon, ""));
+      result.push_back( formattedline_t(header_str, y, coef, scon, "") );
       if (SearchString(pOpts, scon, search_string)) {
          if (selected_index > result.size() - 1)
             increment = -1;
@@ -361,7 +340,7 @@ vector<formattedline_t> ncui::FormatConnections(vector<SquidConnection> conns, i
             }
             string url_str = sqstat::StatFormat(pOpts, scon, ustat);
             coef = CompactLongLine(url_str);
-            result.push_back(MakeResult(url_str, y, coef, scon, ustat.id));
+            result.push_back( formattedline_t(url_str, y, coef, scon, ustat.id));
             if ((!search_string.empty()) && (ustat.uri.find(search_string) != string::npos)) {
                if (selected_index > result.size() - 1)
                   increment = -1;
@@ -374,7 +353,7 @@ vector<formattedline_t> ncui::FormatConnections(vector<SquidConnection> conns, i
          }
       }
       if ((not pGlobalOpts->brief) || (Utils::MemberOf(collapsed, scon.peer))) {
-         result.push_back(MakeNewLine(y));
+         result.push_back( formattedline_t(y) );
          if (selected_index == result.size() - 1) {
             // we dont want to highligth empty line, so jump to next/prev (depends on increment) line
             int j = 1;

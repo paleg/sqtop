@@ -32,6 +32,11 @@ struct formattedline_t {
    bool new_line;
    // line was selected
    bool highlighted;
+
+   formattedline_t() {};
+   formattedline_t(std::string str, int y, int coef, SquidConnection sconn, std::string id) :
+      str(str), y(y), coef(coef), sconn(sconn), id(id), new_line(false), highlighted(false) {};
+   formattedline_t(int y) : y(y), coef(1), new_line(true), highlighted(false) {};
 };
 
 class ncui {
@@ -69,9 +74,6 @@ class ncui {
 
       unsigned int selected_index;
       void ToggleAction();
-
-      formattedline_t MakeResult(std::string str, int y, int coef, SquidConnection sconn, std::string id);
-      formattedline_t MakeNewLine(int y);
 
       unsigned int page_size;
 
