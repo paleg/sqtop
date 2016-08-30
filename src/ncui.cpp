@@ -82,9 +82,11 @@ inline void operator++(Options::RESOLVE_MODE& mode, int) {
       mode = Options::RESOLVE_MODE(mode + 1);
    }
 }
-#endif
 
+ncui::ncui(Options* pgOpts, Resolver* pResolver) : pResolver(pResolver) {
+#else
 ncui::ncui(Options* pgOpts) {
+#endif
    pthread_mutexattr_init(&mattr);
    pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_ERRORCHECK);
    pthread_mutex_init(&tick_mutex, &mattr);
@@ -104,7 +106,7 @@ ncui::ncui(Options* pgOpts) {
 }
 
 ncui::~ncui() {
-   pthread_mutexattr_destroy(&mattr); 
+   pthread_mutexattr_destroy(&mattr);
    pthread_mutex_destroy(&tick_mutex);
    delete pOpts;
 }
@@ -166,7 +168,7 @@ string ncui::b2s(bool value) {
 }
 
 void ncui::AddWatch(string prefix, string value) {
-   if (!debug.empty()) 
+   if (!debug.empty())
       debug += ", ";
    debug += prefix + "=" + value;
 }
@@ -207,9 +209,9 @@ string ncui::helpmsg() {
    ss << " r - " << refresh_interval_help << " (" << Utils::itos(pGlobalOpts->sleep_sec) << ")" << endl;
    ss << endl;
 #ifdef WITH_RESOLVER
-   ss << "Resolver (working in " << pGlobalOpts->pResolver->ResolveMode() << " mode with " 
-                                 << pGlobalOpts->pResolver->ResolveFunc() << " in " 
-                                 << pGlobalOpts->pResolver->MaxThreads() << " threads):" << endl;
+   ss << "Resolver (working in " << pResolver->ResolveMode() << " mode with "
+                                 << pResolver->ResolveFunc() << " in "
+                                 << pResolver->MaxThreads() << " threads):" << endl;
    ss << " n - " << dns_resolution_help << " " << b2s(pGlobalOpts->dns_resolution) << endl;
    ss << " S - " << strip_host_domain_help << " " << b2s(pGlobalOpts->strip_host_domain) << endl;
    ss << " R - " << "hosts showing mode (" << pGlobalOpts->resolve_mode << ")" << endl;
@@ -795,7 +797,7 @@ string ncui::EdLine(int linenum, string prompt, string initial) {
     int c;
     unsigned int pos, xstart, off=0;
     string str = "";
-    
+
     xstart = prompt.size() + 2;
 
     if (!initial.empty()) {
@@ -868,7 +870,7 @@ string ncui::EdLine(int linenum, string prompt, string initial) {
         off = 0;
         if (pos > COLS - xstart - 1)
             off = pos - (COLS - xstart - 1);
-        
+
         /* display the string */
         mvaddstr(linenum, 0, prompt.c_str());
         addstr("> ");

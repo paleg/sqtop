@@ -43,7 +43,11 @@ class ncui {
    public:
       //ncui();
       ~ncui();
+#ifdef WITH_RESOLVER
+      ncui(Options* pgOpts, Resolver* pResolver);
+#else
       ncui(Options* pgOpts);
+#endif
 
       void CursesInit(void);
       void CursesFinish(void);
@@ -105,6 +109,9 @@ class ncui {
       unsigned int start;
 
       Options* pOpts;
+#ifdef WITH_RESOLVER
+      Resolver* pResolver;
+#endif
 };
 
 }

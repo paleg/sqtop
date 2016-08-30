@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <map>
 //exception
 #include <typeinfo>
 
@@ -95,8 +96,13 @@ class sqstatException: public std::exception {
 
 class sqstat {
    public:
-      SquidStats GetInfo(Options* pOpts);
+#ifdef WITH_RESOLVER
+      sqstat(Options* pgOpts, Resolver* pResolver) : pOpts(pgOpts), pResolver(pResolver) {};
+#else
+      sqstat(Options* pgOpts) : pOpts(pgOpts) {};
+#endif
 
+      SquidStats GetInfo();
       std::string squid_version;
 
       static bool CompareURLs(UriStats a, UriStats b);
@@ -125,13 +131,18 @@ class sqstat {
       SquidStats sqstats;
 
 #ifdef WITH_RESOLVER
-      std::string DoResolve(Options* pOpts, std::string peer);
+      std::string DoResolve(std::string peer);
 #endif
 
       void FormatChanged(std::string line);
       //std::vector<SquidConnection>::iterator FindConnByPeer(std::string Host);
       //std::vector<UriStats>::iterator FindStatById(std::vector<SquidConnection>::iterator conn, std::string id);
       UriStats FindUriStatsById(std::vector<SquidConnection> conns, std::string id);
+
+      Options* pOpts;
+#ifdef WITH_RESOLVER
+      Resolver* pResolver;
+#endif
 };
 
 }

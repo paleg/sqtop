@@ -109,7 +109,7 @@ using std::endl;
    if (pOpts->dns_resolution) {
       string tmp = scon.hostname;
       if (pOpts->strip_host_domain) {
-         pOpts->pResolver->StripDomain(tmp);
+         Resolver::StripDomain(tmp);
       }
       switch (pOpts->resolve_mode) {
          case Options::SHOW_NAME:
@@ -230,10 +230,10 @@ void sqstat::FormatChanged(string line) {
 }
 
 #ifdef WITH_RESOLVER
-string sqstat::DoResolve(Options* pOpts, string peer) {
+string sqstat::DoResolve(string peer) {
    string resolved;
    if (pOpts->dns_resolution) {
-      resolved = pOpts->pResolver->Resolve(peer);
+      resolved = pResolver->Resolve(peer);
    } else {
       resolved = peer;
    }
@@ -241,7 +241,7 @@ string sqstat::DoResolve(Options* pOpts, string peer) {
 }
 #endif
 
-SquidStats sqstat::GetInfo(Options* pOpts) {
+SquidStats sqstat::GetInfo() {
    sqconn con;
 
    string line;
@@ -316,7 +316,7 @@ SquidStats sqstat::GetInfo(Options* pOpts) {
                   SquidConnection connection;
                   connection.peer = peer.first;
 #ifdef WITH_RESOLVER
-                  connection.hostname = DoResolve(pOpts, peer.first);
+                  connection.hostname = DoResolve(peer.first);
 #endif
                   Conn_it = connections.insert( std::pair<string, SquidConnection>(peer.first, connection) ).first;
                }

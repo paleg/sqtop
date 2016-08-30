@@ -128,15 +128,15 @@ string conns_format(Options* pOpts, vector<SquidConnection> conns) {
 struct thread_args {
    ncui* ui;
    Options* pOpts;
+   sqstat *pSqstat;
 };
 
 void squid_loop(void* threadarg) {
-   sqstat sqs;
    thread_args* pArgs = reinterpret_cast<thread_args*>(threadarg);
    while (true) {
       if (pArgs->pOpts->do_refresh) {
          try {
-            pArgs->ui->SetStat( sqs.GetInfo(pArgs->pOpts) );
+            pArgs->ui->SetStat( pArgs->pSqstat->GetInfo() );
             pArgs->ui->ClearError();
          }
          catch (sqstatException &e) {
@@ -246,16 +246,31 @@ int main(int argc, char **argv) {
    //sa.sa_handler = finish;
    //sigaction(SIGINT, &sa, NULL);
 
+   sqstat *pSqstat;
+
+#ifdef WITH_RESOLVER
+   Resolver *pResolver = new Resolver();
+   pSqstat = new sqstat(pOpts, pResolver);
+#else
+   pSqstat = new sqstat(pOpts);
+#endif
+
+
 #ifdef ENABLE_UI
    if (pOpts->ui) {
+#ifdef WITH_RESOLVER
+      ncui *ui = new ncui(pOpts, pResolver);
+#else
       ncui *ui = new ncui(pOpts);
+#endif
       ui->CursesInit();
       thread_args args;
       args.ui = ui;
       args.pOpts = pOpts;
+      args.pSqstat = pSqstat;
 #ifdef WITH_RESOLVER
-      pOpts->pResolver->Start(MAX_THREADS);
-      pOpts->pResolver->resolve_mode = Resolver::RESOLVE_ASYNC;
+      pResolver->Start(MAX_THREADS);
+      pResolver->resolve_mode = Resolver::RESOLVE_ASYNC;
 #endif
 
       pthread_t sq_thread;
@@ -268,14 +283,13 @@ int main(int argc, char **argv) {
       delete ui;
    } else {
 #endif
-      sqstat sqs;
       SquidStats sqstats;
 #ifdef WITH_RESOLVER
-      pOpts->pResolver->resolve_mode = Resolver::RESOLVE_SYNC;
+      pResolver->resolve_mode = Resolver::RESOLVE_SYNC;
 #endif
       pOpts->speed_mode = Options::SPEED_AVERAGE;
       try {
-         sqstats = sqs.GetInfo(pOpts);
+         sqstats = pSqstat->GetInfo();
       }
       catch (sqstatException &e) {
          cerr << e.what() << endl;
@@ -287,6 +301,10 @@ int main(int argc, char **argv) {
    }
 #endif
 
+   delete pSqstat;
+#ifdef WITH_RESOLVER
+   delete pResolver;
+#endif
    delete pOpts;
 
    return 0;

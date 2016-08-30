@@ -26,16 +26,9 @@ Options::Options() {
    speed_mode = SPEED_MIXED;
    sort_order = SORT_SIZE;
 #ifdef WITH_RESOLVER
-   pResolver = new Resolver();
    dns_resolution = true;
    strip_host_domain = true;
    resolve_mode = SHOW_BOTH;
-#endif
-}
-
-Options::~Options() {
-#ifdef WITH_RESOLVER
-   delete pResolver;
 #endif
 }
 

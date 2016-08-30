@@ -20,7 +20,6 @@ namespace sqtop {
 class Options {
    public:
       Options();
-      ~Options();
 
       void CopyFrom(Options* pOrig);
 
@@ -58,7 +57,6 @@ class Options {
       };
       SORT_ORDER sort_order;
 #ifdef WITH_RESOLVER
-      Resolver* pResolver;
       bool dns_resolution;
       bool strip_host_domain;
 
