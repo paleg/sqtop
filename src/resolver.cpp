@@ -65,7 +65,7 @@ void Resolver::init() {
    for(int i = 0; i < max_threads; i++) {
       pThreadArgs[i].pMain = this;
       pThreadArgs[i].ThreadNum = i;
-      pthread_create(&pthWorker, NULL, (void *(*) (void *)) &Worker, (void *) &pThreadArgs[i]);
+      pthread_create(&pThreadArgs[i].pthWorker, NULL, (void *(*) (void *)) &Worker, (void *) &pThreadArgs[i]);
    }
 }
 
@@ -76,6 +76,9 @@ Resolver::~Resolver() {
    pthread_cond_destroy(&rCond);
    pthread_condattr_destroy(&cAttr);
 
+   for (int i = 0; i < max_threads; i++) {
+       pthread_cancel(pThreadArgs[i].pthWorker);
+   }
    delete [] pThreadArgs;
 }
 

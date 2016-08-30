@@ -68,8 +68,6 @@ class Resolver {
       static std::string DoRealResolve(struct in_addr* addr);
       static void Worker(void* pThreadArg);
 
-      pthread_t pthWorker;
-
       pthread_mutex_t rMutex;
       pthread_mutexattr_t mAttr;
 
@@ -77,6 +75,7 @@ class Resolver {
       pthread_condattr_t cAttr;
 
       struct ThreadArgs {
+          pthread_t pthWorker;
           void* pMain;
           int ThreadNum;
       };
