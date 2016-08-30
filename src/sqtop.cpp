@@ -132,18 +132,12 @@ struct thread_args {
 
 void squid_loop(void* threadarg) {
    sqstat sqs;
-   std::vector<SQUID_Connection> stat;
    thread_args* pArgs = reinterpret_cast<thread_args*>(threadarg);
    while (true) {
       if (pArgs->pOpts->do_refresh) {
          try {
-            stat = sqs.GetInfo(pArgs->pOpts);
+            pArgs->ui->SetStat( sqs.GetInfo(pArgs->pOpts) );
             pArgs->ui->ClearError();
-            pArgs->ui->SetSpeeds(sqs.av_speed, sqs.curr_speed);
-            pArgs->ui->SetActiveConnCount(sqs.active_conn);
-            pArgs->ui->SetProcessTime(sqs.process_time);
-            pArgs->ui->SetGetTime(sqs.get_time);
-            pArgs->ui->SetStat(stat);
          }
          catch (sqstatException &e) {
             pArgs->ui->SetError(e.what());
@@ -275,20 +269,20 @@ int main(int argc, char **argv) {
    } else {
 #endif
       sqstat sqs;
-      std::vector<SQUID_Connection> stat;
+      SquidStats sqstats;
 #ifdef WITH_RESOLVER
       pOpts->pResolver->resolve_mode = Resolver::RESOLVE_SYNC;
 #endif
       pOpts->speed_mode = Options::SPEED_AVERAGE;
       try {
-         stat = sqs.GetInfo(pOpts);
+         sqstats = sqs.GetInfo(pOpts);
       }
       catch (sqstatException &e) {
          cerr << e.what() << endl;
          exit(1);
       }
-      cout << sqstat::HeadFormat(pOpts, sqs.active_conn, stat.size(), sqs.av_speed) << endl;
-      cout << conns_format(pOpts, stat) << endl;
+      cout << sqstat::HeadFormat(pOpts, sqstats.total_connections, sqstats.connections.size(), sqstats.av_speed) << endl;
+      cout << conns_format(pOpts, sqstats.connections) << endl;
 #ifdef ENABLE_UI
    }
 #endif

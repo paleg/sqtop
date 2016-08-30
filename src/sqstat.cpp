@@ -241,12 +241,12 @@ string sqstat::DoResolve(Options* pOpts, string peer) {
 }
 #endif
 
-vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
+SquidStats sqstat::GetInfo(Options* pOpts) {
    sqconn con;
 
    string line;
 
-   active_conn = 0;
+   sqstats.total_connections = 0;
 
    map <string, SQUID_Connection>::iterator Conn_it; // pointer to current peer
    vector<Uri_Stats>::iterator Stat_it; // pointer to current stat
@@ -278,7 +278,7 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
       while ((con >> line) != 0) {
          active_requests.push_back(line);
       }
-      get_time = time(NULL) - time_before_get;
+      sqstats.get_time = time(NULL) - time_before_get;
    } catch(sqconnException &e) {
       throw sqstatException(e.what(), UNKNOWN_ERROR);
    }
@@ -372,17 +372,17 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
       }
    }
 
-   vector<SQUID_Connection> active_connections;
-   av_speed = 0;
-   curr_speed = 0;
+   sqstats.av_speed = 0;
+   sqstats.curr_speed = 0;
+   sqstats.connections.clear();
    for (map<string, SQUID_Connection>::iterator Conn = connections.begin(); Conn != connections.end(); ++Conn) {
-      active_conn += Conn->second.stats.size();
+      sqstats.total_connections += Conn->second.stats.size();
 
       for (vector<Uri_Stats>::iterator Stats = Conn->second.stats.begin(); Stats != Conn->second.stats.end(); ++Stats) {
          if ((Stats->size != 0) && (Stats->etime != 0)) {
             Stats->av_speed = Stats->size/Stats->etime;
             Conn->second.av_speed += Stats->av_speed;
-            av_speed += Stats->av_speed;
+            sqstats.av_speed += Stats->av_speed;
          }
          if ((Stats->size != 0) && (Stats->oldsize != 0) &&
              (Stats->etime != 0) && (Stats->oldetime != 0) &&
@@ -392,14 +392,14 @@ vector<SQUID_Connection> sqstat::GetInfo(Options* pOpts) {
             if (time_between_get < 1) time_between_get = 1;
             Stats->curr_speed = (Stats->size - Stats->oldsize) / time_between_get;
             Conn->second.curr_speed += Stats->curr_speed;
-            curr_speed += Stats->curr_speed;
+            sqstats.curr_speed += Stats->curr_speed;
          }
       }
-      active_connections.push_back(Conn->second);
+      sqstats.connections.push_back(Conn->second);
    }
-   process_time = time(NULL) - time_before_process;
+   sqstats.process_time = time(NULL) - time_before_process;
 
-   return active_connections;
+   return sqstats;
 }
 
 }

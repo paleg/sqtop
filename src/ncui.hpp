@@ -50,11 +50,7 @@ class ncui {
       void SetError(std::string);
       void ClearError();
 
-      void SetSpeeds(long av_speed, long curr_speed);
-      void SetActiveConnCount(int);
-      void SetStat(std::vector<SQUID_Connection>);
-      void SetProcessTime(time_t t);
-      void SetGetTime(time_t t);
+      void SetStat(SquidStats);
 
    private:
       int CompactLongLine(std::string &line);
@@ -87,12 +83,7 @@ class ncui {
       std::string debug;
       void AddWatch(std::string prefix, std::string value);
 
-      long av_speed;
-      long curr_speed;
-      int act_conn;
-      time_t process_time;
-      time_t get_time;
-      std::vector<SQUID_Connection> sqconns;
+      SquidStats sqstats;
 
       std::string helphintmsg;
       time_t helptimer;

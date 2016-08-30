@@ -153,25 +153,8 @@ void ncui::ClearError() {
    error.erase();
 }
 
-void ncui::SetSpeeds(long aspeed, long cspeed) {
-   av_speed = aspeed;
-   curr_speed = cspeed;
-}
-
-void ncui::SetActiveConnCount(int conn) {
-   act_conn = conn;
-}
-
-void ncui::SetProcessTime(time_t t) {
-   process_time = t;
-}
-
-void ncui::SetGetTime(time_t t) {
-   get_time = t;
-}
-
-void ncui::SetStat(std::vector<SQUID_Connection> stat) {
-   sqconns = stat;
+void ncui::SetStat(SquidStats stats) {
+   sqstats = stats;
 }
 
 string ncui::b2s(bool value) {
@@ -451,7 +434,7 @@ void ncui::Print() {
       offset++;
    }
 
-   vector<SQUID_Connection> sqconns_filtered = FilterConns(sqconns);
+   vector<SQUID_Connection> sqconns_filtered = FilterConns(sqstats.connections);
 
    if (pGlobalOpts->compactsameurls)
       sqstat::CompactSameUrls(sqconns_filtered);
@@ -543,13 +526,13 @@ void ncui::Print() {
    }
 
    // FOOTER
-   string speed = sqstat::SpeedsFormat(pGlobalOpts->speed_mode, av_speed, curr_speed);
+   string speed = sqstat::SpeedsFormat(pGlobalOpts->speed_mode, sqstats.av_speed, sqstats.curr_speed);
    speed[0] = toupper(speed[0]);
    status << speed << "\t\t";
-   status << "Active hosts: " << sqconns.size() << "\t\t";
-   status << "Active connections: " << act_conn << "\t\t";
-   //status << "Get time: " << get_time << "\t\t";
-   //status << "Process time: " << process_time << "\t\t";
+   status << "Active hosts: " << sqstats.connections.size() << "\t\t";
+   status << "Active connections: " << sqstats.total_connections << "\t\t";
+   //status << "Get time: " << sqstats.get_time << "\t";
+   //status << "Process time: " << sqstats.process_time << "\t";
 
    mvhline(max_y-1, 0, 0, COLS);
 
@@ -621,7 +604,7 @@ void ncui::Loop() {
             catch (string &s) {
                ShowHelpHint(s);
             }
-            sqconns.clear();
+            sqstats.connections.clear();
             pGlobalOpts->freeze = false;
             break;
          case 'H':
@@ -732,7 +715,7 @@ void ncui::Loop() {
             catch (string &s) {
                ShowHelpHint(s);
             }
-            sqconns.clear();
+            sqstats.connections.clear();
             pGlobalOpts->freeze = false;
             break;
          case '/':
@@ -758,7 +741,7 @@ void ncui::Loop() {
             catch(string &s) {
                ShowHelpHint(s);
             }
-            sqconns.clear();
+            sqstats.connections.clear();
             pGlobalOpts->freeze = false;
             break;
          case 'r':

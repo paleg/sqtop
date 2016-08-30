@@ -58,6 +58,20 @@ struct Old_Stat {
    Old_Stat(long long size, long etime) : size(size), etime(etime) {};
 };
 
+struct SquidStats {
+   std::vector<SQUID_Connection> connections;
+
+   long av_speed;
+   long curr_speed;
+
+   time_t get_time;
+   time_t process_time;
+
+   int total_connections;
+
+   SquidStats() : av_speed(0), curr_speed(0), get_time(0), process_time(0), total_connections(0) {};
+};
+
 #define FAILED_TO_CONNECT 1
 #define FORMAT_CHANGED 2
 #define ACCESS_DENIED 3
@@ -81,14 +95,9 @@ class sqstatException: public std::exception {
 
 class sqstat {
    public:
-      std::vector<SQUID_Connection> GetInfo(Options* pOpts);
+      SquidStats GetInfo(Options* pOpts);
 
       std::string squid_version;
-      int active_conn;
-      time_t process_time;
-      time_t get_time;
-      long av_speed;
-      long curr_speed;
 
       static bool CompareURLs(Uri_Stats a, Uri_Stats b);
       static bool CompareIP(SQUID_Connection a, SQUID_Connection b);
@@ -112,12 +121,12 @@ class sqstat {
       //std::vector<SQUID_Connection> oldConnections;
       //std::map <std::string, SQUID_Connection> oldConnections;
       std::map <std::string, Old_Stat> old_Stats;
+      //
+      SquidStats sqstats;
 
 #ifdef WITH_RESOLVER
       std::string DoResolve(Options* pOpts, std::string peer);
 #endif
-
-      time_t last_get_time;
 
       void FormatChanged(std::string line);
       //std::vector<SQUID_Connection>::iterator FindConnByPeer(std::string Host);
