@@ -25,7 +25,7 @@ struct formattedline_t {
    // how much lines takes str
    unsigned int coef;
    // original structure (for toggle_action/0)
-   SQUID_Connection sconn;
+   SquidConnection sconn;
    // url id (for toggle_action/0)
    std::string id;
    // is it empty line
@@ -70,7 +70,7 @@ class ncui {
       unsigned int selected_index;
       void ToggleAction();
 
-      formattedline_t MakeResult(std::string str, int y, int coef, SQUID_Connection sconn, std::string id);
+      formattedline_t MakeResult(std::string str, int y, int coef, SquidConnection sconn, std::string id);
       formattedline_t MakeNewLine(int y);
 
       unsigned int page_size;
@@ -95,9 +95,9 @@ class ncui {
 
       formattedline_t selected_t;
 
-      std::vector<formattedline_t> FormatConnections(std::vector<SQUID_Connection> conns, int offset);
-      static bool Filter(SQUID_Connection scon, Options* pOpts);
-      std::vector<SQUID_Connection> FilterConns(std::vector<SQUID_Connection> in);
+      std::vector<formattedline_t> FormatConnections(std::vector<SquidConnection> conns, int offset);
+      static bool Filter(SquidConnection scon, Options* pOpts);
+      std::vector<SquidConnection> FilterConns(std::vector<SquidConnection> in);
       int increment;
       unsigned int y_coef;
       unsigned int start;

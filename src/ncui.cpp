@@ -240,7 +240,7 @@ int ncui::CompactLongLine(string &line) {
    return coef;
 }
 
-/* static */ bool ncui::Filter(SQUID_Connection scon, Options* pOpts) {
+/* static */ bool ncui::Filter(SquidConnection scon, Options* pOpts) {
    if (((pOpts->Hosts.size() == 0) || Utils::IPMemberOf(pOpts->Hosts, scon.peer)) &&
        ((pOpts->Users.size() == 0) || Utils::UserMemberOf(pOpts->Users, scon.usernames))) {
          return false;
@@ -248,14 +248,14 @@ int ncui::CompactLongLine(string &line) {
    return true;
 }
 
-vector<SQUID_Connection> ncui::FilterConns(vector<SQUID_Connection> in) {
-   vector<SQUID_Connection>::iterator it;
+vector<SquidConnection> ncui::FilterConns(vector<SquidConnection> in) {
+   vector<SquidConnection>::iterator it;
    it = std::remove_if( in.begin(), in.end(), std::bind2nd(std::ptr_fun(Filter), pGlobalOpts) );
    in.erase(it, in.end());
    return in;
 }
 
-formattedline_t ncui::MakeResult(string str, int y, int coef, SQUID_Connection sconn, string id) {
+formattedline_t ncui::MakeResult(string str, int y, int coef, SquidConnection sconn, string id) {
    formattedline_t t;
    t.str = str;
    t.y = y;
@@ -276,7 +276,7 @@ formattedline_t ncui::MakeNewLine(int y) {
    return t;
 }
 
-bool SearchString(Options* pOpts, SQUID_Connection scon, string search_string) {
+bool SearchString(Options* pOpts, SquidConnection scon, string search_string) {
    bool ret = false;
    if (!search_string.empty()) {
       bool in_host = false;
@@ -303,13 +303,13 @@ bool SearchString(Options* pOpts, SQUID_Connection scon, string search_string) {
    return ret;
 }
 
-vector<formattedline_t> ncui::FormatConnections(vector<SQUID_Connection> conns, int offset) {
+vector<formattedline_t> ncui::FormatConnections(vector<SquidConnection> conns, int offset) {
 //   AddWatch("orig", Utils::itos(sqconns.size()));
    vector<formattedline_t> result;
    int coef = 0;
    unsigned int y = offset;
 
-   bool (*compareFunc)(SQUID_Connection, SQUID_Connection) = NULL;
+   bool (*compareFunc)(SquidConnection, SquidConnection) = NULL;
    switch (pGlobalOpts->sort_order) {
       case Options::SORT_SIZE:
          compareFunc = &sqstat::CompareSIZE;
@@ -328,8 +328,8 @@ vector<formattedline_t> ncui::FormatConnections(vector<SQUID_Connection> conns, 
    if (compareFunc != NULL)
       sort(conns.begin(), conns.end(), compareFunc);
 
-   for (vector<SQUID_Connection>::iterator it = conns.begin(); it != conns.end(); ++it) {
-      SQUID_Connection scon = *it;
+   for (vector<SquidConnection>::iterator it = conns.begin(); it != conns.end(); ++it) {
+      SquidConnection scon = *it;
       pOpts->CopyFrom(pGlobalOpts);
       if ((not pGlobalOpts->brief) && (Utils::MemberOf(collapsed, scon.peer))) {
          pOpts->brief = true;
@@ -351,8 +351,8 @@ vector<formattedline_t> ncui::FormatConnections(vector<SQUID_Connection> conns, 
 
       if (((not pGlobalOpts->brief) && (not Utils::MemberOf(collapsed, scon.peer))) ||
           ((pGlobalOpts->brief) && (Utils::MemberOf(collapsed, scon.peer)))) {
-         for (vector<Uri_Stats>::iterator itu = scon.stats.begin(); itu != scon.stats.end(); ++itu) {
-            Uri_Stats ustat = *itu;
+         for (vector<UriStats>::iterator itu = scon.stats.begin(); itu != scon.stats.end(); ++itu) {
+            UriStats ustat = *itu;
             pOpts->CopyFrom(pGlobalOpts);
             if (Utils::MemberOf(detailed, ustat.id)) {
                pOpts->detail = true;
@@ -434,7 +434,7 @@ void ncui::Print() {
       offset++;
    }
 
-   vector<SQUID_Connection> sqconns_filtered = FilterConns(sqstats.connections);
+   vector<SquidConnection> sqconns_filtered = FilterConns(sqstats.connections);
 
    if (pGlobalOpts->compactsameurls)
       sqstat::CompactSameUrls(sqconns_filtered);

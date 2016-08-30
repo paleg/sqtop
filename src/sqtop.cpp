@@ -99,13 +99,13 @@ bool DESC(int a, int b) {
    return a > b;
 }
 
-string conns_format(Options* pOpts, vector<SQUID_Connection> conns) {
+string conns_format(Options* pOpts, vector<SquidConnection> conns) {
    std::stringstream result;
 
    if (pOpts->compactsameurls)
       sqstat::CompactSameUrls(conns);
 
-   for (vector<SQUID_Connection>::iterator it = conns.begin(); it != conns.end(); ++it) {
+   for (vector<SquidConnection>::iterator it = conns.begin(); it != conns.end(); ++it) {
       if (((pOpts->Hosts.size() == 0) || Utils::IPMemberOf(pOpts->Hosts, it->peer)) &&
          ((pOpts->Users.size() == 0) || Utils::UserMemberOf(pOpts->Users, it->usernames))) {
 
@@ -113,7 +113,7 @@ string conns_format(Options* pOpts, vector<SQUID_Connection> conns) {
 
          if (not pOpts->brief) {
             result << endl;
-            for (vector<Uri_Stats>::iterator itu = it->stats.begin(); itu != it->stats.end(); ++itu) {
+            for (vector<UriStats>::iterator itu = it->stats.begin(); itu != it->stats.end(); ++itu) {
                result << sqstat::StatFormat(pOpts, *it, *itu);
                result << endl;
             }

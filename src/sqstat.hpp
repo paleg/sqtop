@@ -18,7 +18,7 @@
 
 namespace sqtop {
 
-struct Uri_Stats {
+struct UriStats {
    std::string id;
    int count;
    std::string uri;
@@ -30,12 +30,12 @@ struct Uri_Stats {
    long curr_speed;
    int delay_pool;
    std::string username;
-   // TODO: Uri_Stats() : Uri_Stats("") {};
-   Uri_Stats() : id(""), count(0), uri(""), oldsize(0), size(0), oldetime(0), etime(0), delay_pool(-1), username("") {};
-   Uri_Stats(std::string id) : id(id), count(0), uri(""), oldsize(0), size(0), oldetime(0), etime(0), delay_pool(-1), username("") {};
+   // TODO: UriStats() : UriStats("") {};
+   UriStats() : id(""), count(0), uri(""), oldsize(0), size(0), oldetime(0), etime(0), delay_pool(-1), username("") {};
+   UriStats(std::string id) : id(id), count(0), uri(""), oldsize(0), size(0), oldetime(0), etime(0), delay_pool(-1), username("") {};
 };
 
-struct SQUID_Connection {
+struct SquidConnection {
    std::string peer;
 #ifdef WITH_RESOLVER
    std::string hostname;
@@ -44,22 +44,22 @@ struct SQUID_Connection {
    long max_etime;
    long av_speed;
    long curr_speed;
-   std::vector<Uri_Stats> stats;
+   std::vector<UriStats> stats;
    std::set<std::string> usernames;
-   SQUID_Connection() : sum_size(0), max_etime(0), av_speed(0), curr_speed(0) {};
+   SquidConnection() : sum_size(0), max_etime(0), av_speed(0), curr_speed(0) {};
 };
 
-struct Old_Stat {
+struct OldStat {
    // out.size from previous stats
    long long size;
    // seconds ago from previous stats
    long etime;
-   Old_Stat() : size(0), etime(0) {};
-   Old_Stat(long long size, long etime) : size(size), etime(etime) {};
+   OldStat() : size(0), etime(0) {};
+   OldStat(long long size, long etime) : size(size), etime(etime) {};
 };
 
 struct SquidStats {
-   std::vector<SQUID_Connection> connections;
+   std::vector<SquidConnection> connections;
 
    long av_speed;
    long curr_speed;
@@ -99,28 +99,28 @@ class sqstat {
 
       std::string squid_version;
 
-      static bool CompareURLs(Uri_Stats a, Uri_Stats b);
-      static bool CompareIP(SQUID_Connection a, SQUID_Connection b);
-      static bool ConnByPeer(SQUID_Connection conn, std::string Host);
-      static bool StatByID(Uri_Stats stat, std::string id);
-      static void CompactSameUrls(std::vector<SQUID_Connection>& scon);
+      static bool CompareURLs(UriStats a, UriStats b);
+      static bool CompareIP(SquidConnection a, SquidConnection b);
+      static bool ConnByPeer(SquidConnection conn, std::string Host);
+      static bool StatByID(UriStats stat, std::string id);
+      static void CompactSameUrls(std::vector<SquidConnection>& scon);
 
       static std::string HeadFormat(Options* pOpts, int active_conn, int active_ips, long av_speed);
-      static std::string ConnFormat(Options* pOpts, SQUID_Connection& scon);
-      static std::string StatFormat(Options* pOpts, SQUID_Connection& scon, Uri_Stats& ustat);
+      static std::string ConnFormat(Options* pOpts, SquidConnection& scon);
+      static std::string StatFormat(Options* pOpts, SquidConnection& scon, UriStats& ustat);
       static std::string SpeedsFormat(Options::SPEED_MODE mode, long int av_speed, long int curr_speed);
 
-      static bool CompareSIZE(SQUID_Connection a, SQUID_Connection b);
-      static bool CompareTIME(SQUID_Connection a, SQUID_Connection b);
-      static bool CompareAVSPEED(SQUID_Connection a, SQUID_Connection b);
-      static bool CompareCURRSPEED(SQUID_Connection a, SQUID_Connection b);
+      static bool CompareSIZE(SquidConnection a, SquidConnection b);
+      static bool CompareTIME(SquidConnection a, SquidConnection b);
+      static bool CompareAVSPEED(SquidConnection a, SquidConnection b);
+      static bool CompareCURRSPEED(SquidConnection a, SquidConnection b);
 
    private:
-      //std::vector<SQUID_Connection> connections;
-      std::map <std::string, SQUID_Connection> connections;
-      //std::vector<SQUID_Connection> oldConnections;
-      //std::map <std::string, SQUID_Connection> oldConnections;
-      std::map <std::string, Old_Stat> old_Stats;
+      //std::vector<SquidConnection> connections;
+      std::map <std::string, SquidConnection> connections;
+      //std::vector<SquidConnection> oldConnections;
+      //std::map <std::string, SquidConnection> oldConnections;
+      std::map <std::string, OldStat> oldstats;
       //
       SquidStats sqstats;
 
@@ -129,9 +129,9 @@ class sqstat {
 #endif
 
       void FormatChanged(std::string line);
-      //std::vector<SQUID_Connection>::iterator FindConnByPeer(std::string Host);
-      //std::vector<Uri_Stats>::iterator FindStatById(std::vector<SQUID_Connection>::iterator conn, std::string id);
-      Uri_Stats FindUriStatsById(std::vector<SQUID_Connection> conns, std::string id);
+      //std::vector<SquidConnection>::iterator FindConnByPeer(std::string Host);
+      //std::vector<UriStats>::iterator FindStatById(std::vector<SquidConnection>::iterator conn, std::string id);
+      UriStats FindUriStatsById(std::vector<SquidConnection> conns, std::string id);
 };
 
 }
