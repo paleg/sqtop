@@ -95,13 +95,13 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am__sqtop_SOURCES_DIST = Base64.cpp Utils.cpp options.cpp sqconn.cpp \
-	sqstat.cpp ncui.cpp resolver.cpp sqtop.cpp
+am__sqtop_SOURCES_DIST = Base64.cpp Utils.cpp sqconn.cpp sqstat.cpp \
+	ncui.cpp resolver.cpp sqtop.cpp
 @ENABLE_UI_TRUE@am__objects_1 = ncui.$(OBJEXT)
 @WITH_RESOLVER_TRUE@am__objects_2 = resolver.$(OBJEXT)
-am_sqtop_OBJECTS = Base64.$(OBJEXT) Utils.$(OBJEXT) options.$(OBJEXT) \
-	sqconn.$(OBJEXT) sqstat.$(OBJEXT) $(am__objects_1) \
-	$(am__objects_2) sqtop.$(OBJEXT)
+am_sqtop_OBJECTS = Base64.$(OBJEXT) Utils.$(OBJEXT) sqconn.$(OBJEXT) \
+	sqstat.$(OBJEXT) $(am__objects_1) $(am__objects_2) \
+	sqtop.$(OBJEXT)
 sqtop_OBJECTS = $(am_sqtop_OBJECTS)
 sqtop_DEPENDENCIES = @LIBOBJS@
 AM_V_P = $(am__v_P_@AM_V@)
@@ -261,7 +261,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-sqtop_SOURCES = Base64.cpp Utils.cpp options.cpp sqconn.cpp sqstat.cpp \
+sqtop_SOURCES = Base64.cpp Utils.cpp sqconn.cpp sqstat.cpp \
 	$(am__append_1) $(am__append_2) sqtop.cpp
 sqtop_LDADD = @LIBOBJS@
 AM_CPPFLAGS = -Wall
@@ -371,7 +371,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Base64.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ncui.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/options.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/resolver.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sqconn.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sqstat.Po@am__quote@

@@ -101,14 +101,12 @@ ncui::ncui(Options* pgOpts) {
    y_coef = 0;
    start = 0;
    //ticks = 0;
-   pOpts = new Options();
-   pOpts->CopyFrom(pGlobalOpts);
+   Opts = *pGlobalOpts;
 }
 
 ncui::~ncui() {
    pthread_mutexattr_destroy(&mattr);
    pthread_mutex_destroy(&tick_mutex);
-   delete pOpts;
 }
 
 void ncui::CursesInit() {
@@ -232,7 +230,7 @@ int ncui::CompactLongLine(string &line) {
    if (len > COLS*coef) {
       coef++;
    }
-   if (( coef > 1) && pOpts->compactlongurls) {
+   if (( coef > 1) && Opts.compactlongurls) {
       int extra_chars = len - COLS + 3;
       line.erase(len/2-extra_chars/2, extra_chars);
       line.insert(len/2-extra_chars/2, "...");
@@ -257,14 +255,14 @@ vector<SquidConnection> ncui::FilterConns(vector<SquidConnection> in) {
    return in;
 }
 
-bool SearchString(Options* pOpts, SquidConnection scon, string search_string) {
+bool ncui::SearchString(SquidConnection scon, string search_string) {
    bool ret = false;
    if (!search_string.empty()) {
       bool in_host = false;
       bool in_ip = (scon.peer.find(search_string) != string::npos);
 #ifdef WITH_RESOLVER
       bool in_name = (scon.hostname.find(search_string) != string::npos);
-      switch (pOpts->resolve_mode) {
+      switch (pGlobalOpts->resolve_mode) {
          case Options::SHOW_NAME:
             in_host = in_name;
             break;
@@ -311,16 +309,16 @@ vector<formattedline_t> ncui::FormatConnections(vector<SquidConnection> conns, i
 
    for (vector<SquidConnection>::iterator it = conns.begin(); it != conns.end(); ++it) {
       SquidConnection scon = *it;
-      pOpts->CopyFrom(pGlobalOpts);
+      Opts = *pGlobalOpts;
       if ((not pGlobalOpts->brief) && (Utils::MemberOf(collapsed, scon.peer))) {
-         pOpts->brief = true;
+         Opts.brief = true;
       } else if ((pGlobalOpts->brief) && (Utils::MemberOf(collapsed, scon.peer))) {
-         pOpts->brief = false;
+         Opts.brief = false;
       }
-      string header_str = sqstat::ConnFormat(pOpts, scon);
+      string header_str = sqstat::ConnFormat(&Opts, scon);
       coef = CompactLongLine(header_str);
       result.push_back( formattedline_t(header_str, y, coef, scon, "") );
-      if (SearchString(pOpts, scon, search_string)) {
+      if (SearchString(scon, search_string)) {
          if (selected_index > result.size() - 1)
             increment = -1;
          else
@@ -334,13 +332,13 @@ vector<formattedline_t> ncui::FormatConnections(vector<SquidConnection> conns, i
           ((pGlobalOpts->brief) && (Utils::MemberOf(collapsed, scon.peer)))) {
          for (vector<UriStats>::iterator itu = scon.stats.begin(); itu != scon.stats.end(); ++itu) {
             UriStats ustat = *itu;
-            pOpts->CopyFrom(pGlobalOpts);
+            Opts = *pGlobalOpts;
             if (Utils::MemberOf(detailed, ustat.id)) {
-               pOpts->detail = true;
-               pOpts->full = true;
-               pOpts->compactlongurls = false;
+               Opts.detail = true;
+               Opts.full = true;
+               Opts.compactlongurls = false;
             }
-            string url_str = sqstat::StatFormat(pOpts, scon, ustat);
+            string url_str = sqstat::StatFormat(&Opts, scon, ustat);
             coef = CompactLongLine(url_str);
             result.push_back( formattedline_t(url_str, y, coef, scon, ustat.id));
             if ((!search_string.empty()) && (ustat.uri.find(search_string) != string::npos)) {
@@ -391,7 +389,7 @@ void ncui::Print() {
 
    int offset = 3;
 
-   pOpts->CopyFrom(pGlobalOpts);
+   Opts = *pGlobalOpts;
    // FormatConnections can set helphintmsg so it should run before header formatting
    if (pGlobalOpts->Hosts.size() != 0) {
       string hosts = "Filtering by: " + Utils::JoinVector(pGlobalOpts->Hosts, ", ");

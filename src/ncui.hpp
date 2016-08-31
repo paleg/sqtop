@@ -64,6 +64,7 @@ class ncui {
    private:
       int CompactLongLine(std::string &line);
 
+      bool SearchString(SquidConnection scon, std::string search_string);
       std::string EdLine(int linenum, std::string prompt, std::string initial);
       int min(const int a, const int b);
 
@@ -108,7 +109,7 @@ class ncui {
       unsigned int y_coef;
       unsigned int start;
 
-      Options* pOpts;
+      Options Opts;
 #ifdef WITH_RESOLVER
       Resolver* pResolver;
 #endif

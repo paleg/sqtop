@@ -19,28 +19,29 @@ namespace sqtop {
 
 class Options {
    public:
-      Options();
+      Options() :
+         host("127.0.0.1"), port(3128), pass(""),
+         brief(false), full(false), zero(false), detail(false),
+         ui(true),
+         compactlongurls(true), compactsameurls(true),
+         strip_user_domain(true),
+         freeze(false), do_refresh(true), sleep_sec(2),
+         showhelp(false), showhelphint(false),
+         speed_mode(SPEED_MIXED), sort_order(SORT_SIZE)
+#ifdef WITH_RESOLVER
+         ,dns_resolution(true),
+         strip_host_domain(true),
+         resolve_mode(SHOW_BOTH)
+#endif
+      {};
 
-      void CopyFrom(Options* pOrig);
-
-      std::string host;
-      int port;
-      std::string pass;
-      std::vector<std::string> Hosts;
-      std::vector<std::string> Users;
-      bool brief;
-      bool full;
-      bool zero;
-      bool detail;
+      std::string host; int port; std::string pass;
+      bool brief; bool full; bool zero; bool detail;
       bool ui;
-      bool compactlongurls;
-      bool compactsameurls;
+      bool compactlongurls; bool compactsameurls;
       bool strip_user_domain;
-      bool freeze;
-      bool do_refresh;
-      int sleep_sec;
-      bool showhelp;
-      bool showhelphint;
+      bool freeze; bool do_refresh; int sleep_sec;
+      bool showhelp; bool showhelphint;
 
       enum SPEED_MODE {
          SPEED_MIXED,
@@ -67,6 +68,9 @@ class Options {
       };
       RESOLVE_MODE resolve_mode;
 #endif
+
+      std::vector<std::string> Hosts;
+      std::vector<std::string> Users;
 };
 
 }
