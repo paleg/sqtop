@@ -190,8 +190,8 @@ int main(int argc, char **argv) {
             try {
                pOpts->port = Utils::stol(optarg);
             }
-            catch(string &s) {
-               cerr << "Unknown port - " << s << endl;
+            catch (const std::exception& error) {
+               cerr << "Wrong port - '" << optarg << "' (" << error.what() << ")" << endl;
                exit(1);
             }
             break;
@@ -210,13 +210,14 @@ int main(int argc, char **argv) {
          case 'r':
             try {
                long int sec = Utils::stol(optarg);
-               if (sec > 0)
-                  pOpts->sleep_sec = Utils::stol(optarg);
-               else
+               if (sec > 0) {
+                  pOpts->sleep_sec = sec;
+               } else {
                   cerr << "Refresh interval should be greater than 0, using default - " << pOpts->sleep_sec << endl;
+               }
             }
-            catch(string &s) {
-               cerr << "Wrong number - " << s << endl;
+            catch (const std::exception& error) {
+               cerr << "Wrong refresh interval - '" << optarg << "' (" << error.what() << ")" << endl;
                exit(1);
             }
             break;

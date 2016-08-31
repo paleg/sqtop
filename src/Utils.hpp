@@ -10,6 +10,8 @@
 #include <vector>
 #include <set>
 
+#include <stdexcept>
+
 namespace Utils {
    extern std::vector<std::string> SplitString(std::string str, std::string delim);
    extern std::pair <std::string, std::string> SplitIPPort(std::string ipport);

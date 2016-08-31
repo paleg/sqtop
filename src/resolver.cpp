@@ -193,9 +193,8 @@ string Resolver::ResolveSync(string ip) {
    string result;
    try {
       result = DoRealResolve(&addr);
-   }
-   catch (int n) {
-      //cout << "Error resolving " << ip << ": " << n << endl;
+   } catch (const std::runtime_error& error) {
+      //cout << "Error resolving " << ip << ": " << error.what() << endl;
       result = ip;
    }
    return result;
@@ -214,7 +213,8 @@ string Resolver::ResolveSync(string ip) {
    if (res == 0) {
       return buf;
    } else {
-      throw res;
+      // TODO: check res value
+      throw std::runtime_error("Failed to resolve");
    }
 }
 #elif defined(USE_GETHOSTBYADDR)
@@ -224,7 +224,7 @@ string Resolver::ResolveSync(string ip) {
    if (he) {
       return he->h_name;
    } else {
-      throw h_errno;
+      throw std::runtime_error("Failed to resolve");
    }
 }
 #elif defined(USE_GETHOSTBYADDR_R)
@@ -254,7 +254,7 @@ string Resolver::ResolveSync(string ip) {
        new_tmphstbuf = static_cast<char *>(realloc(tmphstbuf, hstbuflen));
        if (new_tmphstbuf == NULL) {
            free(tmphstbuf);
-           throw -1;
+           throw std::runtime_error("Failed to resolve");
        } else {
            tmphstbuf = new_tmphstbuf;
        }
@@ -267,12 +267,12 @@ string Resolver::ResolveSync(string ip) {
    }
    free(tmphstbuf);
    if (error) {
-      throw herr;
+      throw std::runtime_error("Failed to resolve");
    }
    return result;
 }
 #else
 /* static */ string Resolver::DoRealResolve(struct in_addr* addr) {
-   throw -1;
+   throw std::runtime_error("Resolv function was not defined");
 }
 #endif

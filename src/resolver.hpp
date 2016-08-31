@@ -10,6 +10,7 @@
 #include <list>
 #include <vector>
 #include <map>
+#include <stdexcept>
 #include <pthread.h>
 
 #include "config.h"

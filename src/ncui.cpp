@@ -579,11 +579,10 @@ void ncui::Loop() {
             try {
                inp = EdLine(0, "Cachemgr password", pGlobalOpts->pass);
                pGlobalOpts->pass = inp;
+               sqstats.connections.clear();
+            } catch (const std::invalid_argument& error) {
+               ShowHelpHint(error.what());
             }
-            catch (string &s) {
-               ShowHelpHint(s);
-            }
-            sqstats.connections.clear();
             pGlobalOpts->freeze = false;
             break;
          case 'H':
@@ -591,9 +590,8 @@ void ncui::Loop() {
             try {
                inp = EdLine(0, "Hosts to show", Utils::JoinVector(pGlobalOpts->Hosts, ","));
                pGlobalOpts->Hosts = Utils::SplitString(inp, ",");
-            }
-            catch (string &s) {
-               ShowHelpHint(s);
+            } catch (const std::invalid_argument& error) {
+               ShowHelpHint(error.what());
             }
             pGlobalOpts->freeze = false;
             break;
@@ -602,9 +600,8 @@ void ncui::Loop() {
             try {
                inp = EdLine(0, "Users to show", Utils::JoinVector(pGlobalOpts->Users, ","));
                pGlobalOpts->Users = Utils::SplitString(inp, ",");
-            }
-            catch (string &s) {
-               ShowHelpHint(s);
+            } catch (const std::invalid_argument& error) {
+               ShowHelpHint(error.what());
             }
             pGlobalOpts->freeze = false;
             break;
@@ -690,11 +687,10 @@ void ncui::Loop() {
             try {
                inp = EdLine(0, "Squid host", pGlobalOpts->host);
                if (inp != "") pGlobalOpts->host = inp;
+               sqstats.connections.clear();
+            } catch (const std::invalid_argument& error) {
+               ShowHelpHint(error.what());
             }
-            catch (string &s) {
-               ShowHelpHint(s);
-            }
-            sqstats.connections.clear();
             pGlobalOpts->freeze = false;
             break;
          case '/':
@@ -702,9 +698,8 @@ void ncui::Loop() {
             try {
                inp = EdLine(0, "Search for", "");
                if (inp != "") search_string = inp;
-            }
-            catch (string &s) {
-               ShowHelpHint(s);
+            } catch (const std::invalid_argument& error) {
+               ShowHelpHint(error.what());
             }
             pGlobalOpts->freeze = false;
             break;
@@ -715,12 +710,11 @@ void ncui::Loop() {
                if (inp != "") {
                   long int port = Utils::stol(inp);
                   pGlobalOpts->port = port;
+                  sqstats.connections.clear();
                }
+            } catch (const std::exception& error) {
+               ShowHelpHint(error.what());
             }
-            catch(string &s) {
-               ShowHelpHint(s);
-            }
-            sqstats.connections.clear();
             pGlobalOpts->freeze = false;
             break;
          case 'r':
@@ -732,9 +726,8 @@ void ncui::Loop() {
                   pGlobalOpts->sleep_sec = sec;
                else
                   ShowHelpHint("Invalid refresh interval");
-            }
-            catch(string &s) {
-               ShowHelpHint(s);
+            } catch (const std::exception& error) {
+               ShowHelpHint(error.what());
             }
             pGlobalOpts->freeze = false;
             break;
@@ -879,11 +872,13 @@ string ncui::EdLine(int linenum, string prompt, string initial) {
 
     } while (c != KEY_ENTER && c != '\r' && c != '\x1b' && c != 7 /* ^G */);
 
-    if (c == KEY_ENTER || c == '\r')
+    if (c == KEY_ENTER || c == '\r') {
         /* Success */
         return str;
-    else {
-        throw(string("invalid input"));
+    } else if (c == '\x1b') {
+       throw std::invalid_argument("Input was canceled");
+    } else {
+        throw std::invalid_argument("Invalid input");
     }
 }
 
