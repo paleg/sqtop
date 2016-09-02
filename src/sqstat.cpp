@@ -265,6 +265,7 @@ SquidStats sqstat::GetInfo() {
    // TODO: use milliseconds from <chrono>
    time_t time_before_get = 0, time_before_process = 0;
 
+   vector<string> headers;
    vector<string> active_requests;
 
    try {
@@ -275,23 +276,22 @@ SquidStats sqstat::GetInfo() {
       }
       time_before_get = time(NULL);
       con << request;
-      while ((con >> line) != 0) {
-         active_requests.push_back(line);
-      }
+      con.get(headers, active_requests);
       sqstats.get_time = time(NULL) - time_before_get;
    } catch(sqconnException &e) {
       throw sqstatException(e.what(), UNKNOWN_ERROR);
    }
+   //return sqstats;
 
    time_before_process = time(NULL);
-   if (active_requests.size() < 1) {
+   if (headers.size() < 1) {
       throw sqstatException("Empty reply from squid", UNKNOWN_ERROR);
-   } else if (active_requests[0] != "HTTP/1.0 200 OK" &&
-              active_requests[0] != "HTTP/1.1 200 OK") {
-      throw sqstatException("Access to squid statistic denied: "+ active_requests[0], ACCESS_DENIED);
+   } else if (headers[0] != "HTTP/1.0 200 OK" &&
+              headers[0] != "HTTP/1.1 200 OK") {
+      throw sqstatException("Access to squid statistic denied: '"+ headers[0] + "'", ACCESS_DENIED);
    }
 
-   for (vector<string>::iterator it = active_requests.begin()+1; it != active_requests.end(); ++it) {
+   for (vector<string>::iterator it = active_requests.begin(); it != active_requests.end(); ++it) {
       line = *it;
 
       vector<string> result;

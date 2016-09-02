@@ -7,6 +7,9 @@
 #define __SQCONN_H
 
 #include <string>
+#include <vector>
+#include <sstream>
+
 //sockaddr_in
 #include <netinet/in.h>
 //exception
@@ -32,11 +35,12 @@ class sqconn {
 
        void open(std::string, int);
        int operator << (const std::string);
-       int operator >> (std::string&);
+       void get(std::vector<std::string>& header, std::vector<std::string>& response);
 
     private:
        int m_sock;
        struct sockaddr_in m_addr;
+       std::stringstream data;
 };
 
 }

@@ -14,9 +14,12 @@
 //write, read, close
 #include <unistd.h>
 
+#include <sstream>
+
 #include "sqconn.hpp"
 
 using std::string;
+using std::vector;
 
 namespace sqtop {
 
@@ -60,6 +63,7 @@ int sqconn::operator << (const string str) {
     return f+s;
 }
 
+/*
 int sqconn::operator >> (string& rResult) {
     char ch;
     int data;
@@ -72,6 +76,42 @@ int sqconn::operator >> (string& rResult) {
     }
     if (data == -1) throw sqconnException(strerror(errno));
     return data;
+}
+ */
+
+void sqconn::get(vector<string>& headers, vector<string>& response) {
+    const int buff_size = 1024;
+    char buff[buff_size];
+    ssize_t rcvd;
+    while (true) {
+        rcvd = read(m_sock, buff, buff_size-1);
+        if (rcvd == -1) {
+            throw sqconnException(strerror(errno));
+         } else if (rcvd == 0) {
+            break;
+         }
+
+         data << string(buff, rcvd);
+    }
+
+    string item;
+    bool headers_flag = true;
+    while (getline(data, item, '\n')) {
+       if (headers_flag) {
+          if (item == "\r") {
+             headers_flag = false;
+             continue;
+          } else if (item.size() > 0) {
+             item.resize(item.size()-1);
+             headers.push_back(item);
+          }
+       } else {
+          item.erase(0, item.find_first_not_of(" \t"));
+          response.push_back(item);
+       }
+    }
+
+    data.str("");
 }
 
 }
