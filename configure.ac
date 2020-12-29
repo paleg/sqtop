@@ -60,7 +60,9 @@ if test x$enable_ui = xtrue; then
             ], [AC_MSG_ERROR([Unable to find the ncurses headers]); break;])
         ])
    AC_CHECK_LIB([ncurses], [initscr], [], [AC_MSG_ERROR([Unable to find the ncurses library]); break;])
-   AC_CHECK_FUNCS([clear refresh endwin mvaddstr mvchgat mvhline getch beep initscr nonl keypad noecho cbreak halfdelay addnstr], [], [AC_MSG_ERROR([Unable to find some ncurses functions]); break;])
+   AC_CHECK_FUNCS([clear refresh endwin mvaddstr mvchgat mvhline getch beep initscr nonl], [], [AC_MSG_ERROR([Unable to find some ncurses functions]); break;])
+   AC_CHECK_LIB([tinfo], [cur_term], [], [AC_MSG_ERROR([Unable to find the tinfo (ncurses) library]); break;])
+   AC_CHECK_FUNCS([keypad noecho cbreak halfdelay addnstr], [], [AC_MSG_ERROR([Unable to find some tinfo (ncurses) functions]); break;])
    test_pthread=yes
 fi
 
